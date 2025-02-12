@@ -1,0 +1,24 @@
+{
+    "name": "K11",
+    "area": 19000,
+    "cinema": {
+      "name": "Cinema A",
+      "openedDate": "01-JAN-2022",
+      "releasedFilms": [
+        {
+          "name": "film A",
+          "releaseDate": "01-Jan-2022"
+        },
+        {
+          "name": "film B",
+          "releaseDate": "02-Jan-2022"
+        }
+      ]
+    },
+    "shopCategory": [
+      "Sport",
+      "Food",
+      "Clothing"
+    ]
+  }
+

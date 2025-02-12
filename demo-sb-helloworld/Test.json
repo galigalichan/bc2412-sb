@@ -1,0 +1,39 @@
+{"name" : {
+    "firstName" : "Vincent",
+    "lastName" : "Lau",
+    "nickName" : null
+},
+"age" : 14,
+"address" : [
+    {
+    "Line1" : "ABC",
+    "Line2" : "ABC",
+    "Line3" : "ABC"
+},
+    {
+    "Line1" : "ABC",
+    "Line2" : "ABC",
+    "Line3" : "ABC"
+    }
+]
+}
+
+// {} -> Object -> Create class for this object
+// [] -> List or Array
+
+// public class Person {
+//     private Name names;
+//     private int age;
+//     private Address[] addresses;
+
+//     public static class Name {
+//         private String firstName;
+//         private String lastName;
+//         private String nickName;
+//     }
+
+//     public static class Address {
+//         private String line1;
+//         private String line2;
+//         private String line3;
+//     }
