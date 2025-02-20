@@ -2,8 +2,6 @@ package com.bootcamp.sb.demo_sb_bc_forum.dto;
 
 import java.util.List;
 
-import com.bootcamp.sb.demo_sb_bc_forum.dto.CombinedDto.Post;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -1,7 +1,6 @@
 package com.bootcamp.sb.demo_sb_bc_forum.dto.mapper;
 
 import org.springframework.stereotype.Component;
-
 import com.bootcamp.sb.demo_sb_bc_forum.dto.UserDto;
 
 @Component
