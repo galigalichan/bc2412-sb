@@ -16,4 +16,12 @@ public class PostDto {
     private Long id;
     private String title;
     private String body;
+
+    public PostDto(Long id, String title, String body, Long userId) {
+        this.id = id;
+        this.title = title;
+        this.body = body;
+        this.userId = userId;
+    }
+
 }

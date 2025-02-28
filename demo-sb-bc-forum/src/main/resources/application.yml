@@ -16,7 +16,10 @@ spring.jpa:
 
 # Custom variables
 # api:
-#   jsonplaceholder:
-#     domain: "jsonplaceholder.typicode.com"
+#   jph:
+#     host: "jsonplaceholder.typicode.com"
 #     endpoints:
 #       users: "/users"
+#       posts: "/posts"
+#       comments: "/comments"
+        

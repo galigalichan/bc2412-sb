@@ -1,6 +1,5 @@
 package com.bootcamp.sb.demo_sb_customer.controller.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,20 +11,25 @@ import com.bootcamp.sb.demo_sb_customer.dto.UserDTO;
 import com.bootcamp.sb.demo_sb_customer.dto.mapper.UserDTOMapper;
 import com.bootcamp.sb.demo_sb_customer.model.dto.UserDto;
 import com.bootcamp.sb.demo_sb_customer.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @RestController
 public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserDTOMapper userDTOMapper;
+
     @GetMapping(value = "/jsonplaceholder/users")
     // public List<UserDto> getUsers() {
-    public List<UserDTO> getUsers() {
+    public List<UserDTO> getUsers() throws JsonProcessingException {
         // return this.userService.getUsers();
         // List of UserDto -> List of UserDTO
-
+        List<UserDto> userDtos = this.userService.getUsers();
+        System.out.println("userDtos=" + userDtos);
         // Stream method with mapper
-        return this.userService.getUsers().stream().map(e -> UserDTOMapper.map(e)).collect(Collectors.toList());
+        return this.userService.getUsers().stream().map(e -> userDTOMapper.map(e)).collect(Collectors.toList());
 
         // Stream method without mapper
         // return this.userService.getUsers().stream().map(e -> {

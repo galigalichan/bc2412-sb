@@ -1,5 +1,7 @@
 package com.bootcamp.sb.demo_sb_bc_forum.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +31,7 @@ public class GeoEntity {
 
     @OneToOne
     @JoinColumn(name = "address_id", nullable = false)
+    @JsonIgnore // Prevent serialization of the user back-reference
     private AddressEntity address;
 
 }

@@ -2,12 +2,12 @@ package com.bootcamp.sb.demo_sb_bc_forum.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,13 +31,15 @@ public class UserEntity {
     private String phone;
     private String website;
 
-    @Version // This is the version field for optimistic locking
-    private Integer version;
+    // @Version // This is the version field for optimistic locking
+    // private Integer version;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // lazy loading: avoid loading entire object graphs unless necessary
     private AddressEntity address;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // lazy loading: avoid loading entire object graphs unless necessary
     private CompanyEntity company;
 
 }

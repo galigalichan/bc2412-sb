@@ -1,8 +1,8 @@
 package com.bootcamp.sb.demo_sb_customer.controller.impl;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bootcamp.sb.demo_sb_customer.codewave.ApiResp;
@@ -38,6 +38,16 @@ public class CustomerController implements CustomerOperation {
       .syscode(SysCode.OK)
       .data(serviceResult)
       .build();
+  }
+
+  @Override
+  public List<CustomerEntity> getCustomerByJPQL(@RequestParam String name) {
+    return this.customerService.getCustomersByJPQL(name);
+  }
+
+  @Override
+  public List<CustomerEntity> getCustomerByNQ(@RequestParam String name) {
+    return this.customerService.getCustomersByNQ(name);
   }
 
 }

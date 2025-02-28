@@ -14,7 +14,7 @@ public interface OrderOperation {
     @PostMapping(value = "/order")
     ApiResp<OrderEntity> createOrder(@RequestParam(value = "cid") Long customerId, @RequestBody OrderEntity orderEntity);
 
-    @GetMapping(value = "/orders")
-    ApiResp<List<OrderEntity>> getOrders();
+    // @GetMapping(value = "/orders")
+    // ApiResp<List<OrderEntity>> getOrders();
     
 }

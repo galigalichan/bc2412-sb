@@ -10,25 +10,42 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import com.bootcamp.sb.demo_sb_bc_forum.codewave.BusinessException;
+import com.bootcamp.sb.demo_sb_bc_forum.codewave.SysCode;
 import com.bootcamp.sb.demo_sb_bc_forum.dto.CombinedDto;
 import com.bootcamp.sb.demo_sb_bc_forum.dto.CombinedDto2;
 import com.bootcamp.sb.demo_sb_bc_forum.dto.CommentDto;
 import com.bootcamp.sb.demo_sb_bc_forum.dto.PostDto;
 import com.bootcamp.sb.demo_sb_bc_forum.dto.UserDto;
-import com.bootcamp.sb.demo_sb_bc_forum.exception.BusinessException;
-import com.bootcamp.sb.demo_sb_bc_forum.exception.SysCode;
 import com.bootcamp.sb.demo_sb_bc_forum.service.CombinedInfoService;
 
 @Service
 public class CombinedInfoServiceImpl implements CombinedInfoService{
     @Autowired
     private RestTemplate restTemplate;
-    
+
+    // @Value("${api.jph.post}")
+    // private String host;
+
+    // @Value("${api.jph.endpoints.users}")
+    // private String userEndPoint;
+
+    // @Value("${api.jph.endpoints.posts}")
+    // private String postEndPoint;
+
+    // @Value("${api.jph.endpoints.comments}")
+    // private String commentEndPoint;
+
     @Override
-    public List<CombinedDto> getCombinedInfo() {
+    public List<CombinedDto> getCombinedInfoFromUrl() {
         String usersUrl = "https://jsonplaceholder.typicode.com/users";
         String postsUrl = "https://jsonplaceholder.typicode.com/posts";
         String commentsUrl = "https://jsonplaceholder.typicode.com/comments";
+
+        // String url = XUriBuilder.create().https().host(host).path(userEndPoint).build();
+        // encapsulation: hard code to streamline work process and avoid mistakes
+        // Users do not need to know the logic behind. They just care if your method makes their life easier.
 
         // store the data with a list for each URL page
         List<UserDto> userDtos = 
@@ -121,6 +138,7 @@ public class CombinedInfoServiceImpl implements CombinedInfoService{
             .build();
     }
 
+    @Override
     public List<CombinedDto2> getAllCommentsByUserId(String id) {
         Long userId;
         try {
@@ -192,5 +210,7 @@ public class CombinedInfoServiceImpl implements CombinedInfoService{
 
         return filteredDtos;
     }
+
+
 
 }

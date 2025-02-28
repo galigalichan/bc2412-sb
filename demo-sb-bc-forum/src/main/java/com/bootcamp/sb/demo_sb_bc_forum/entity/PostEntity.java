@@ -31,4 +31,8 @@ public class PostEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
+    // Add a method to get the userId
+    public Long getUserId() {
+        return user != null ? user.getId() : null;
+    }
 }

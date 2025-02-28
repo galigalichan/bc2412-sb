@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Coingecko - Coin Data</title>
+    <style>
+        .positive { color: green; }
+        .negative { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Coin Data from External API</h1>
+    <div class="form-group">
+        <label for="coinFilter">Filter by ID:</label>
+        <input type="text" class="form-control" id="coinFilter" placeholder="Enter Coin ID">
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Coin ID</th>
+                <th>Current Price (USD)</th>
+                <th>Price Change in 24hr (%)</th>
+            </tr>
+        </thead>
+        <tbody th:each="coinData : ${coinList}" class="coinRow">
+            <tr>
+                <td><img th:src="${coinData.image}" alt="Coin Image" height="30"></td>
+                <td th:text="${coinData.id}"></td>
+                <td th:text="${coinData.currentPrice}"></td>
+                <td th:classappend="${coinData.priceChangePercentage24h >= 0 ? 'positive' : 'negative'}"
+                    th:text="${#numbers.formatDecimal(coinData.priceChangePercentage24h, 2, 2) + '%'}"></td>
+            </tr>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Add JavaScript for filtering -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var coinFilter = document.getElementById('coinFilter');
+            var coinRows = document.querySelectorAll('.coinRow');
+
+            coinFilter.addEventListener('input', function () {
+                var filter = coinFilter.value.toUpperCase();
+
+                coinRows.forEach(function (row) {
+                    var coinId = row.querySelector('td:nth-child(2)').textContent.toUpperCase();
+                    var coinPercentage = row.querySelector('td:nth-child(4)'); // Updated column index for percentage
+                    
+                    // Remove leading zero
+                    coinPercentage.textContent = coinPercentage.textContent.replace(/^(-?)0+(\d)/, '$1$2');
+
+                    if (coinId.indexOf(filter) > -1) {
+                        row.style.display = ''; // Show the row
+                    } else {
+                        row.style.display = 'none'; // Hide the row
+                    }
+                });
+            });
+        });
+    </script>
+</body>

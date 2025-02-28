@@ -17,7 +17,6 @@ import lombok.Setter;
 @Table(name = "Addresses")
 @Builder
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class AddressEntity {
@@ -29,6 +28,7 @@ public class AddressEntity {
     private String city;
     private String zipcode;
     @OneToOne
-    @JoinColumn(name = "User_id")
+    @JoinColumn(name = "user_id")
+    @Setter
     private UserEntity userEntity;
 }

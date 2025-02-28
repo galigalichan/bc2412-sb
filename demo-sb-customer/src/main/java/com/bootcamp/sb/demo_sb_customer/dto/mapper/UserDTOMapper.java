@@ -8,7 +8,7 @@ import com.bootcamp.sb.demo_sb_customer.model.dto.UserDto;
 @Component // bean
 public class UserDTOMapper {
     // instance method
-    public static UserDTO map(UserDto dto) {
+    public UserDTO map(UserDto dto) {
             // create object
             UserDTO.Address.Geo userAddressGeo = UserDTO.Address.Geo.builder()
                 .latitude(dto.getAddress().getGeo().getLatitude())

@@ -1,0 +1,20 @@
+server:
+  port : 8080
+
+api:
+  coingecko:
+    coin-market:
+      url:
+        base: "https://api.coingecko.com"
+        version: "api/v3"
+        coinsMarketsEndpoint: "/coins/markets"
+      param:
+        vsCurrency: "usd"
+        order: "market_cap_desc"
+        ids: 
+        per-page: 100
+        page: 1
+        sparkline: false
+        price-change-percentage: "1h"
+      return:
+        no-of-items: 20

@@ -1,5 +1,7 @@
 package com.bootcamp.sb.demo_sb_customer.entity;
 
+import java.io.Serializable;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,10 +19,9 @@ import lombok.Setter;
 @Table(name = "Companies")
 @Builder
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CompanyEntity {
+public class CompanyEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,6 +29,7 @@ public class CompanyEntity {
     private String catchPhrase;
     private String bs;
     @OneToOne
-    @JoinColumn(name = "User_id")
+    @JoinColumn(name = "user_id")
+    @Setter
     private UserEntity userEntity;
 }

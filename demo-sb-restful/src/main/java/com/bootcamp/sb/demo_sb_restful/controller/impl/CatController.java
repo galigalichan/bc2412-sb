@@ -22,7 +22,7 @@ public class CatController implements CatOperation {
     // Controller -> Service -> CatDatbase
 
     // Dependency Injection (Spring Core Concept)
-    // Autowired: Try to find an object which fits into catService. (Beofe Server start complete)
+    // Autowired: Try to find an object which fits into catService. (Before Server start complete)
     // ! If fail, server start fail.
 
     // Field Injection

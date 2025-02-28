@@ -1,9 +1,7 @@
 package com.bootcamp.sb.demo_sb_customer.codewave;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice // Bean
 public class GlobalExceptionHandler { // 
     @ExceptionHandler(BusinessException.class)
     public ApiResp<Void> handleBusinessException(BusinessException e) {

@@ -1,7 +1,5 @@
 package com.bootcamp.sb.demo_sb_customer.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,7 +17,6 @@ import lombok.Setter;
 @Table(name = "Geo")
 @Builder
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class GeoEntity {
@@ -30,5 +27,6 @@ public class GeoEntity {
     private Double longitude;
     @OneToOne
     @JoinColumn(name = "address_id")
+    @Setter
     private AddressEntity addressEntity;
 }

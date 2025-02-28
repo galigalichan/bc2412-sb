@@ -22,14 +22,14 @@ public class OrderController implements OrderOperation {
     //     this.customerService = customerService;
     // }
 
-  @Override
-  public ApiResp<List<OrderEntity>> getOrders() {
-    List<OrderEntity> orderEntities = this.orderService.getOrders();
-    return ApiResp.<List<OrderEntity>>builder()
-      .syscode(SysCode.OK)
-      .data(orderEntities)
-      .build();
-  }
+  // @Override
+  // public ApiResp<List<OrderEntity>> getOrders() {
+  //   List<OrderEntity> orderEntities = this.orderService.getOrders();
+  //   return ApiResp.<List<OrderEntity>>builder()
+  //     .syscode(SysCode.OK)
+  //     .data(orderEntities)
+  //     .build();
+  // }
   
   @Override
   public ApiResp<OrderEntity> createOrder(Long customerid, OrderEntity orderEntity) {

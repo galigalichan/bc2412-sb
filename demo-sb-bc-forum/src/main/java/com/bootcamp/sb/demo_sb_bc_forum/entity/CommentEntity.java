@@ -33,5 +33,8 @@ public class CommentEntity {
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private PostEntity post;
-    
+
+    public Long getPostId() {
+        return post != null ? post.getId() : null;
+    }    
 }

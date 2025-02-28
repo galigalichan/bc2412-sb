@@ -17,4 +17,12 @@ public class CommentDto {
     private String name;
     private String email;
     private String body;
+
+    public CommentDto(Long id, String name, String email, String body, Long postId) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.body = body;
+        this.postId = postId;
+    }
 }

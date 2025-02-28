@@ -1,5 +1,7 @@
 package com.bootcamp.sb.demo_sb_bc_forum.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,5 +32,6 @@ public class CompanyEntity {
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore // Prevent serialization of the user back-reference
     private UserEntity user;
 }

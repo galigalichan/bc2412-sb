@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -24,7 +23,7 @@ import com.demo.helloworld.demo_sb_helloworld.ShoppingMall.Cinema.Film;
 @ResponseBody // JSON
 public class HelloworldController {
     // An API for getting resource
-    @GetMapping(value = "/greeting") // URL convention: use noun // unique
+    @GetMapping(value = "/iphone/greeting") // URL convention: use noun // unique
     public String hello() {
         return "Hello World!";
     }

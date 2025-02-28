@@ -7,5 +7,6 @@ import com.bootcamp.sb.demo_sb_bc_forum.entity.CommentEntity;
 
 @Repository
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
+
     
 }

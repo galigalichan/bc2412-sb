@@ -27,6 +27,6 @@ public interface CatOperation {
     @PutMapping(value = "/cat")
     public Boolean updateCat(@RequestParam Long id, @RequestBody Cat cat);
   
-    @PatchMapping(value = "/cat/name/{name}")
+    @PatchMapping(value = "/cat/name/{name}") // { }: URL template variable
     public Boolean patchCatName(@RequestParam Long id, @PathVariable String name);
   }

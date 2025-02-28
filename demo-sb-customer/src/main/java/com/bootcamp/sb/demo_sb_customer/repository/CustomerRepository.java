@@ -1,6 +1,9 @@
 package com.bootcamp.sb.demo_sb_customer.repository;
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.bootcamp.sb.demo_sb_customer.entity.CustomerEntity;
@@ -16,4 +19,31 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
     // findAll()
     // findById()
     // deleteById()
+    // .. etc
+
+    // select * from Customers where name = 'John';
+
+    // ! JPA Method
+    // controller -> service -> 
+    // how about return List?
+    List<CustomerEntity> findByName(String name);
+
+    // Support both and & or
+    List<CustomerEntity> findByNameAndEmail(String name, String email);
+
+    // Practice: Date Format
+
+    // ! JPQL (Entity), CustomerEntity exactly the same as the Entity class name
+    // Spring boot throws error message if the name goes wrong
+    @Query(value = "select c from CustomerEntity c where c.name = :name", nativeQuery = false)
+    List<CustomerEntity> findByNameByJPQL(@Param("name") String customerName);
+
+    // ! Native Query (Normal SQL) -> product specific
+    // No compile-time checking
+    @Query(value = "select c.* from customers c where c.name = :name", nativeQuery = true)
+    List<CustomerEntity> findByNameByNativeQuery(@Param("name") String customerName);
+
+    // MyBatis
+    // no entity / repository required
+
 }
