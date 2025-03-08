@@ -1,0 +1,25 @@
+# server.port
+server:
+  port: 8080
+
+# spring.datasource.driverClassName
+# spring.datasource.url
+spring.datasource:
+  driverClassName: "org.postgresql.Driver"
+  url: "jdbc:postgresql://localhost:5432/bc-mtr-station"
+  username: "postgres"
+  password: "admin1234"
+
+spring.jpa:
+  show-sql: true # so that the command window shows the statement "Hibernate create..."
+  hibernate.ddl-auto: update
+
+# Custom variables
+# api:
+#   jph:
+#     host: "jsonplaceholder.typicode.com"
+#     endpoints:
+#       users: "/users"
+#       posts: "/posts"
+#       comments: "/comments"
+        
