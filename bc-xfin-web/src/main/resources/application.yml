@@ -1,0 +1,14 @@
+server:
+  port: 8100
+
+bc:
+  xfin:
+    service:
+      url: http://localhost:8101
+
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false
