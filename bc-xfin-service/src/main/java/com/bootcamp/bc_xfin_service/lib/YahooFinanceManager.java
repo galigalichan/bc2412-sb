@@ -1,4 +1,4 @@
-package com.bootcamp.bc_xfin_service.service;
+package com.bootcamp.bc_xfin_service.lib;
 
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;

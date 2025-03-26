@@ -1,4 +1,4 @@
-package com.bootcamp.bc_xfin_service.service;
+package com.bootcamp.bc_xfin_service.lib;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package com.bootcamp.bc_xfin_service.service;
+package com.bootcamp.bc_xfin_service.lib;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

@@ -1,4 +1,4 @@
-package com.bootcamp.bc_xfin_service.service;
+package com.bootcamp.bc_xfin_service.lib;
 
 import java.io.IOException;
 import java.util.List;

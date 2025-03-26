@@ -1,7 +1,7 @@
 package com.bootcamp.bc_xfin_service.config;
 
-import com.bootcamp.bc_xfin_service.service.CookieInterceptor;
-import com.bootcamp.bc_xfin_service.service.CookieManager; // Import your CookieManager
+import com.bootcamp.bc_xfin_service.lib.CookieInterceptor;
+import com.bootcamp.bc_xfin_service.lib.CookieManager;
 
 import java.util.ArrayList;
 
@@ -11,9 +11,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory; // or JedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
@@ -32,12 +34,20 @@ public class AppConfig {
         return restTemplate;
     }
 
+    @SuppressWarnings("removal")
     @Bean
-    public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, String> template = new RedisTemplate<>();
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory, ObjectMapper objectMapper) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
         template.setKeySerializer(RedisSerializer.string());
-        template.setValueSerializer(RedisSerializer.json());
+        
+        // Explicitly set custom ObjectMapper for Redis serialization
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        serializer.setObjectMapper(objectMapper);
+
+        template.setValueSerializer(serializer);
         return template;
     }
 
@@ -48,9 +58,10 @@ public class AppConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule()); // Register the Java Time module
-        return mapper; // Define the ObjectMapper bean
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule()); // Handles Java 8 Date/Time types
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // Keeps ISO-8601 format
+        return objectMapper;
     }
 
     @Bean

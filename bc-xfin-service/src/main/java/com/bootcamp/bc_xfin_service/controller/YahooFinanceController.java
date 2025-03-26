@@ -2,9 +2,9 @@ package com.bootcamp.bc_xfin_service.controller;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.bootcamp.bc_xfin_service.lib.CrumbManager;
+import com.bootcamp.bc_xfin_service.lib.YahooFinanceManager;
 import com.bootcamp.bc_xfin_service.model.dto.QuoteDto;
-import com.bootcamp.bc_xfin_service.service.CrumbManager;
-import com.bootcamp.bc_xfin_service.service.YahooFinanceManager;
 
 @RestController
 @RequestMapping("/api/yahoo")

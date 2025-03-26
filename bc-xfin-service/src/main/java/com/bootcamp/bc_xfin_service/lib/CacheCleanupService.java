@@ -1,4 +1,4 @@
-package com.bootcamp.bc_xfin_service.service;
+package com.bootcamp.bc_xfin_service.lib;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.bootcamp.bc_xfin_service.infra.RedisManager;
+import com.bootcamp.bc_xfin_service.service.HolidayService;
 
 @Service
 public class CacheCleanupService {

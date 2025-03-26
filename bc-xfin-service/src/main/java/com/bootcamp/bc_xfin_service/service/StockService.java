@@ -9,4 +9,5 @@ public interface StockService {
     public Map<String, String> getSystemDate(String symbol);
 
     public Map<String, Object> get5MinData(String symbol);
+    
 }

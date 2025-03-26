@@ -1,4 +1,4 @@
-package com.bootcamp.bc_xfin_service.service;
+package com.bootcamp.bc_xfin_service.lib;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -40,8 +40,8 @@ public class CookieManager {
             
             // Log response details
             logger.info("Response Code: {}", response.getStatusCodeValue());
-            logger.info("Response Headers: {}", response.getHeaders());
-            logger.info("Response Body: {}", response.getBody());
+            // logger.info("Response Headers: {}", response.getHeaders());
+            // logger.info("Response Body: {}", response.getBody());
             
             if (response.getStatusCode() == HttpStatus.OK) {
                 List<String> cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);

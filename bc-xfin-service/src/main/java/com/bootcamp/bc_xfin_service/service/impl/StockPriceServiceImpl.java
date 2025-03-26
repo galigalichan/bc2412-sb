@@ -1,9 +1,11 @@
 package com.bootcamp.bc_xfin_service.service.impl;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -14,17 +16,19 @@ import org.springframework.stereotype.Service;
 
 import com.bootcamp.bc_xfin_service.codewave.Type;
 import com.bootcamp.bc_xfin_service.entity.TStocksPriceEntity;
+import com.bootcamp.bc_xfin_service.lib.RedisManager;
+import com.bootcamp.bc_xfin_service.lib.YahooFinanceManager;
 import com.bootcamp.bc_xfin_service.repository.TStocksPriceRepository; // Assume you have a repository for TStocksPriceEntity
 import com.bootcamp.bc_xfin_service.service.HolidayService;
-import com.bootcamp.bc_xfin_service.service.YahooFinanceManager;
+import com.bootcamp.bc_xfin_service.service.StockPriceService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.bootcamp.bc_xfin_service.infra.RedisManager;
+import com.bootcamp.bc_xfin_service.model.dto.FiveMinData;
 import com.bootcamp.bc_xfin_service.model.dto.QuoteDto;
 import com.bootcamp.bc_xfin_service.model.dto.QuoteDto.QuoteResponse.Result;
 import com.bootcamp.bc_xfin_service.model.dto.StocksPriceDTO;
 
 @Service
-public class StockPriceServiceImpl {
+public class StockPriceServiceImpl implements StockPriceService {
     private static final Logger logger = LoggerFactory.getLogger(StockPriceServiceImpl.class);
 
     @Autowired
@@ -41,16 +45,14 @@ public class StockPriceServiceImpl {
 
     private static final List<String> STOCKS = List.of("0388.HK", "0700.HK", "0005.HK");
 
-    @Scheduled(cron = "0 35 9 * * MON-FRI")
-    @Scheduled(cron = "0 40 9  * * MON-FRI")
     @Scheduled(cron = "0 45 9  * * MON-FRI")
     @Scheduled(cron = "0 50 9  * * MON-FRI")
     @Scheduled(cron = "0 55 9  * * MON-FRI")
     @Scheduled(cron = "0 0/5 10-11 * * MON-FRI")
     @Scheduled(cron = "0 0 12  * * MON-FRI")
     @Scheduled(cron = "0 5 12  * * MON-FRI")
-    @Scheduled(cron = "0 5 13  * * MON-FRI")
-    @Scheduled(cron = "0 10 13  * * MON-FRI")
+    @Scheduled(cron = "0 10 12  * * MON-FRI")
+    @Scheduled(cron = "0 15 12  * * MON-FRI")
     @Scheduled(cron = "0 15 13  * * MON-FRI")
     @Scheduled(cron = "0 20 13  * * MON-FRI")
     @Scheduled(cron = "0 25 13  * * MON-FRI")
@@ -63,6 +65,8 @@ public class StockPriceServiceImpl {
     @Scheduled(cron = "0 0/5 14-15 * * MON-FRI")
     @Scheduled(cron = "0 0 16  * * MON-FRI")
     @Scheduled(cron = "0 5 16  * * MON-FRI")
+    @Scheduled(cron = "0 10 16  * * MON-FRI")
+    @Scheduled(cron = "0 15 16  * * MON-FRI")
     public void recordStockPrices() {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Hong_Kong"));
 
@@ -75,6 +79,10 @@ public class StockPriceServiceImpl {
         for (String symbol : STOCKS) {
             // Fetch the stock price data
             StocksPriceDTO stockData = fetchStockData(symbol);
+            if (stockData == null) {
+                logger.warn("Skipping symbol {} as no stock data was retrieved.", symbol);
+                continue;
+            }
             
             // Set currTime to the API call time
             LocalDateTime currTime = LocalDateTime.now(ZoneId.of("Asia/Hong_Kong"));
@@ -97,13 +105,21 @@ public class StockPriceServiceImpl {
             // Save to the database
             stocksPriceRepository.save(entity);
     
-        // Save to Redis with exception handling
-        try {
-            redisManager.set("STOCK-" + symbol, stockData);
-        } catch (JsonProcessingException e) {
-            // Handle the exception (e.g., log it)
-            logger.error("Failed to save stock data to Redis for symbol {}: {}", symbol, e.getMessage());
-        }
+            // Save to Redis with exception handling
+            try {
+                String redisKey = "5MIN-" + symbol;
+                FiveMinData fiveMinData = redisManager.get(redisKey, FiveMinData.class);
+            
+                List<TStocksPriceEntity> updatedData = (fiveMinData != null) ? new ArrayList<>(fiveMinData.getData()) : new ArrayList<>();
+                updatedData.add(entity);
+            
+                FiveMinData newFiveMinData = new FiveMinData(stockData.getRegularMarketTime(), updatedData);
+                
+                // No need for manual serialization
+                redisManager.set(redisKey, newFiveMinData, Duration.ofHours(12));
+            } catch (JsonProcessingException e) {
+                logger.error("Failed to save stock data to Redis for symbol {}: {}", symbol, e.getMessage());
+            }
         }
     }
 
