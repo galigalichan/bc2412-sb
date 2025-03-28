@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bootcamp.bc_xfin_web.controller.LineChartOperation;
-import com.bootcamp.bc_xfin_web.dto.LineChartDTO;
 import com.bootcamp.bc_xfin_web.dto.LinePointDTO;
 import com.bootcamp.bc_xfin_web.dto.mapper.ChartMapper;
 import com.bootcamp.bc_xfin_web.model.LinePoint;
@@ -28,32 +27,13 @@ public class LineChartController implements LineChartOperation {
 
   @Override
   @GetMapping(value = "/chart/line")
-  public LineChartDTO getLineChart(@RequestParam String symbol, @RequestParam String interval) {
-    // Fetch both price points and moving averages from Redis/backend
-    Map<String, List<LinePoint>> pricePointData = getPricePointByFiveMinute(symbol);
-
-    List<LinePoint> pricePoints = pricePointData.getOrDefault("priceData", List.of());
-    List<LinePoint> movingAverages = pricePointData.getOrDefault("movingAverage", List.of());
-
-    // List<LinePoint> pricePoints = switch (LinePoint.TYPE.of(interval)) {
-    //   case FIVE_MIN -> ((StockDataService) pricePointData).getPricePointByFiveMinute(symbol).getOrDefault("pricePoints", List.of());
-    // };
-
-    // List<LinePoint> movingAverages = switch (LinePoint.TYPE.of(interval)) {
-    //   case FIVE_MIN -> ((StockDataService) pricePointData).getPricePointByFiveMinute(symbol).getOrDefault("movingAverage", List.of());
-    // };
-
-    // Convert to DTOs for the response
-    List<LinePointDTO> pricePointDTOs = pricePoints.stream()
+  public List<LinePointDTO> getLineChart(@RequestParam String symbol, @RequestParam String interval) {
+    List<LinePoint> linePoints = switch (LinePoint.TYPE.of(interval)) {
+      case FIVE_MIN -> getPricePointByFiveMinute(symbol).getOrDefault("linePoints", List.of());
+    };
+    return linePoints.stream()
         .map(chartMapper::map)
         .collect(Collectors.toList());
-
-    List<LinePointDTO> movingAverageDTOs = movingAverages.stream()
-        .map(chartMapper::map)
-        .collect(Collectors.toList());
-
-    return new LineChartDTO(pricePointDTOs, movingAverageDTOs);
-
   }
 
   private Map<String, List<LinePoint>> getPricePointByFiveMinute(String symbol) {

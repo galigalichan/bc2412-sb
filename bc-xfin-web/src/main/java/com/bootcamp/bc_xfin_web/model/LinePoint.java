@@ -19,6 +19,7 @@ public class LinePoint {
     private LocalDateTime dateTime;
     private Long timestamp;
     private Double close;
+    private Double movingAverage;  // New field for moving average
   
     public LinePoint(int year, int month, int dayOfMonth, int hour, int minute,
         Double close) {
@@ -28,12 +29,13 @@ public class LinePoint {
     }
 
     // New constructor to accept Unix timestamp
-    public LinePoint(Long unixTimestamp, Double close) {
+    public LinePoint(Long unixTimestamp, Double close, Double movingAverage) {
         this.timestamp = unixTimestamp; // Always preserve the original Unix timestamp
         this.dateTime = Instant.ofEpochSecond(unixTimestamp) // Convert to local time only for display
                               .atZone(ZoneId.of("Asia/Hong_Kong"))
                               .toLocalDateTime();
         this.close = close;
+        this.movingAverage = movingAverage;  // Store calculated moving average
     }
   
     public enum TYPE {
@@ -53,6 +55,7 @@ public class LinePoint {
                 "dateTime=" + dateTime +
                 ", timestamp=" + timestamp +
                 ", close=" + close +
+                ", movingAverage=" + movingAverage +
                 '}';
     }
 }

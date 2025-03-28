@@ -2,7 +2,6 @@ package com.bootcamp.bc_xfin_web.service;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,14 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.bootcamp.bc_xfin_web.lib.RedisManager;
 import com.bootcamp.bc_xfin_web.model.LinePoint;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -33,7 +31,7 @@ public class StockDataService {
     private RestTemplate restTemplate;
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisManager redisManager;
 
     @Value("${bc.xfin.service.url}") // Load from application.yml
     private String backendUrl;
@@ -43,60 +41,43 @@ public class StockDataService {
     }
 
     public Map<String, List<LinePoint>> getPricePointByFiveMinute(String symbol) {
-        String redisKey = "5MIN-" + symbol;
-
-        // Retrieve from Redis
-        String cachedJson = (String) redisTemplate.opsForValue().get(redisKey);
-        if (cachedJson != null) {
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                objectMapper.registerModule(new JavaTimeModule()); // Handle date/time
-                logger.info("Retrieved from Redis: {}", cachedJson);
-                return objectMapper.readValue(cachedJson, new TypeReference<Map<String, List<LinePoint>>>() {});
-            } catch (JsonProcessingException e) {
-                logger.error("Error parsing Redis JSON", e);
+        String redisKey = "LINEPT-" + symbol;
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule()); // Handle date/time properly
+    
+        // 1️⃣ Retrieve from Redis with error handling
+        Map<String, List<LinePoint>> cachedData = null;
+        try {
+            cachedData = redisManager.get(redisKey, new TypeReference<>() {});
+            if (cachedData != null && !cachedData.isEmpty()) {
+                logger.info("Returning cached data for symbol: {}", symbol);
+                return cachedData;
             }
+        } catch (Exception e) {
+            logger.error("Error retrieving or parsing data from Redis for key {}: {}", redisKey, e.getMessage());
         }
-
-        // Fetch from backend
+    
+        // 2️⃣ Fetch from backend if no valid cached data
         Map<String, Object> response = fetchFromBackend(symbol);
         logger.info("Fetched Backend Response: {}", response);
 
-        // Extract stock price data
-        Object stockDataRaw = response.get("5MIN-" + symbol);
-        if (stockDataRaw == null || !(stockDataRaw instanceof Map)) {
-            logger.warn("No valid stock data found for key: 5MIN-{}", symbol);
-            return Collections.emptyMap();
-        }
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> stockDataMap = (Map<String, Object>) stockDataRaw;
-        Object dataRaw = stockDataMap.get("data");
-        Object movingAvgRaw = stockDataMap.get("movingAverages");
-
-        List<LinePoint> pricePoints = parseResponseToLinePoints(dataRaw);
-        List<LinePoint> movingAverages = parseResponseToLinePoints(movingAvgRaw);
-
-        logger.info("Parsed price points: {}", pricePoints);
-        logger.info("Parsed moving averages: {}", movingAverages);
-
-        // Store in Redis
-        Map<String, List<LinePoint>> result = new HashMap<>();
-        result.put("priceData", pricePoints);
-        result.put("movingAverage", movingAverages);
-
+        // 3️⃣ Extract and parse stock price data
+        Object linePointsRaw = response.get("linePoints");
+        List<LinePoint> linePoints = parseResponseToLinePoints(linePointsRaw);
+        
+        logger.info("Parsed line points: {}", linePoints);
+    
+        // 4️⃣ Store processed data in Redis
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.registerModule(new JavaTimeModule());
-            String jsonData = objectMapper.writeValueAsString(result);
-            redisTemplate.opsForValue().set(redisKey, jsonData, Duration.ofMinutes(5));
-        } catch (JsonProcessingException e) {
-            logger.error("Error serializing data to JSON", e);
+            redisManager.set(redisKey, Map.of("linePoints", linePoints), Duration.ofMinutes(5));
+        } catch (Exception e) {
+            logger.error("Error storing data in Redis", e);
         }
-
-        return result;
+    
+        // 5️⃣ Return the processed data
+        return Map.of("linePoints", linePoints);
     }
-
+    
     public Map<String, Object> fetchFromBackend(String symbol) {
         String url = backendUrl + "/api/yahoo/5min/" + symbol;
         logger.info("Fetching data from backend: {}", url);
@@ -131,14 +112,16 @@ public class StockDataService {
         return rawList.stream()
             .map(item -> {
                 if (item instanceof Map<?, ?> dataMap) {
-                    Object timestampRaw = dataMap.get("regularMarketTime");
-                    Object closeRaw = dataMap.get("regularMarketPrice");
+                    Object timestampRaw = dataMap.get("timestamp");
+                    Object closeRaw = dataMap.get("close");
+                    Object movingAvgRaw = dataMap.get("movingAverage");
 
                     Long timestamp = timestampRaw instanceof Number num ? num.longValue() : null;
                     Double close = closeRaw instanceof Number num ? num.doubleValue() : null;
+                    Double movingAverage = movingAvgRaw instanceof Number num ? num.doubleValue() : null;
 
                     if (timestamp != null && close != null) {
-                        return new LinePoint(timestamp, close);
+                        return new LinePoint(timestamp, close, movingAverage);
                     }
                 }
                 logger.warn("Invalid data entry in stock price list: {}", item);

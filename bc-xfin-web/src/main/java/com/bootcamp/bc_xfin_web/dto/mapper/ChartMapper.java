@@ -26,6 +26,7 @@ public class ChartMapper {
         return LinePointDTO.builder()
             .dateTime(point.getTimestamp()) // Use existing timestamp
             .close(point.getClose())
+            .movingAverage(point.getMovingAverage())
             .build();
     }
 

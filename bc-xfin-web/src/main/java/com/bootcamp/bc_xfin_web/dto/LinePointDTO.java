@@ -8,4 +8,5 @@ import lombok.Getter;
 public class LinePointDTO {
     private Long dateTime;
     private Double close;
+    private Double movingAverage;
 }
