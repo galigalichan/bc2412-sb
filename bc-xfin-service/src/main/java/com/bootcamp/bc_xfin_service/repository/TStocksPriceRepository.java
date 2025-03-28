@@ -26,7 +26,6 @@ public interface TStocksPriceRepository extends JpaRepository<TStocksPriceEntity
     @Query(value = "SELECT * FROM tstocks_price WHERE symbol = :symbol AND regularmarkettime IN (:marketTimes) ORDER BY regularmarkettime DESC", nativeQuery = true)
     List<TStocksPriceEntity> findBySymbolAndMarketTimes(@Param("symbol") String symbol, @Param("marketTimes") List<Long> marketTimes);
 
-    @Query("SELECT t FROM TStocksPriceEntity t WHERE t.symbol = :symbol ORDER BY t.regularMarketTime DESC LIMIT 300")
-    List<TStocksPriceEntity> findTop300BySymbolOrderByRegularMarketTimeDesc(@Param("symbol") String symbol);
-
+    @Query(value = "SELECT * FROM tstocks_price WHERE symbol = :symbol AND regularmarkettime < :earliestTimestamp ORDER BY regularmarkettime DESC LIMIT :limit", nativeQuery = true)
+    List<TStocksPriceEntity> findPreviousEntries(@Param("symbol") String symbol, @Param("earliestTimestamp") long earliestTimestamp, @Param("limit") int limit);
 }

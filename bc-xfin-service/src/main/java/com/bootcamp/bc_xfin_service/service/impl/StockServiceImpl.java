@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,8 @@ import org.springframework.stereotype.Service;
 import com.bootcamp.bc_xfin_service.entity.TStockEntity;
 import com.bootcamp.bc_xfin_service.entity.TStocksPriceEntity;
 import com.bootcamp.bc_xfin_service.lib.RedisManager;
-import com.bootcamp.bc_xfin_service.model.dto.FiveMinData;
+import com.bootcamp.bc_xfin_service.model.FiveMinData;
+import com.bootcamp.bc_xfin_service.model.LinePoint;
 import com.bootcamp.bc_xfin_service.repository.TStockRepository;
 import com.bootcamp.bc_xfin_service.repository.TStocksPriceRepository;
 import com.bootcamp.bc_xfin_service.service.StockService;
@@ -175,11 +175,11 @@ public class StockServiceImpl implements StockService {
                 List<TStocksPriceEntity> updatedData = new ArrayList<>();
                 updatedData.addAll(missingData);
     
-                // Sort in descending order by market time
-                updatedData.sort(Comparator.comparing(TStocksPriceEntity::getRegularMarketTime).reversed());
+                // Sort in ascending order by market time
+                updatedData.sort(Comparator.comparing(TStocksPriceEntity::getRegularMarketTime));
 
                 // Store updated data in Redis for 12 hours
-                FiveMinData newData = new FiveMinData(updatedData.get(0).getRegularMarketTime(), updatedData);
+                FiveMinData newData = new FiveMinData(updatedData.get(updatedData.size() - 1).getRegularMarketTime(), updatedData);
                 redisManager.set(redisKey, newData, Duration.ofHours(12));
 
                 return Collections.singletonMap(redisKey, newData);
@@ -196,56 +196,55 @@ public class StockServiceImpl implements StockService {
         return Collections.singletonMap(redisKey, Collections.emptyList());
     }
 
-    public List<TStocksPriceEntity> calculate3DayMovingAverage(String symbol) {
-        // ✅ Fetch latest 300 records in DESCENDING order (most recent first)
-        List<TStocksPriceEntity> recentPrices = 
-            tStocksPriceRepository.findTop300BySymbolOrderByRegularMarketTimeDesc(symbol);
-    
-        if (recentPrices.size() < 198) {
-            logger.warn("Not enough data points for symbol {} to calculate 3-day moving average", symbol);
-            return Collections.emptyList();
+    public Map<String, Object> get5MinDataWithMA(String symbol) throws JsonProcessingException {
+        // Fetch today's 5-min data
+        Map<String, Object> fiveMinDataResponse = get5MinData(symbol);
+        if (!fiveMinDataResponse.containsKey("5MIN-" + symbol)) {
+            return Collections.emptyMap();
         }
-    
-        List<TStocksPriceEntity> movingAverages = new ArrayList<>();
-        double sum = 0;
-    
-        // Compute the initial sum for the first 198 most recent points
-        for (int i = 0; i < 198; i++) {
-            sum += recentPrices.get(i).getRegularMarketPrice();
+        
+        Object rawData = fiveMinDataResponse.get("5MIN-" + symbol);
+        FiveMinData fiveMinData = new FiveMinData();
+        
+        if (rawData instanceof List<?>) {
+            // If it's a list, set it as the data field
+            fiveMinData.setData(objectMapper.convertValue(rawData, new TypeReference<List<TStocksPriceEntity>>() {}));
+        } else {
+            fiveMinData = objectMapper.convertValue(rawData, FiveMinData.class);
         }
-    
-        // ✅ Compute moving averages starting from the most recent data
-        for (int i = 0; i <= (recentPrices.size() - 198); i++) { 
-            double avg = sum / 198;
+        
+        List<TStocksPriceEntity> stockDataList = fiveMinData.getData();
+        if (stockDataList == null || stockDataList.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        
+        // Find the earliest timestamp from today's data
+        long earliestTimestamp = stockDataList.get(0).getRegularMarketTime();
+        
+        // Retrieve the 329 preceding entries from the database
+        List<TStocksPriceEntity> historicalData = tStocksPriceRepository.findPreviousEntries(symbol, earliestTimestamp, 329);
+        Collections.reverse(historicalData);
 
-            TStocksPriceEntity maEntry = new TStocksPriceEntity();
-            maEntry.setRegularMarketTime(recentPrices.get(i).getRegularMarketTime()); // ✅ Align with 5-min data
-            maEntry.setRegularMarketPrice(avg);
-            movingAverages.add(maEntry);
-
-            // ✅ Slide the window to keep processing the latest data
-            if (i + 198 < recentPrices.size()) {
-                sum -= recentPrices.get(i).getRegularMarketPrice();  // Remove the oldest value
-                sum += recentPrices.get(i + 198).getRegularMarketPrice();  // Add the next new value
-            }
+        // Combine historical data with today's data
+        List<TStocksPriceEntity> fullData = new ArrayList<>(historicalData);
+        fullData.addAll(stockDataList);
+        
+        // Calculate moving averages using a sliding window
+        List<LinePoint> linePoints = new ArrayList<>();
+        double sum = fullData.stream().limit(329).mapToDouble(TStocksPriceEntity::getRegularMarketPrice).sum();
+        
+        for (int i = 329; i < fullData.size(); i++) {
+            TStocksPriceEntity currentEntry = fullData.get(i);
+            sum += currentEntry.getRegularMarketPrice();
+            double movingAverage = sum / 330;
+            linePoints.add(new LinePoint(currentEntry.getRegularMarketTime(), currentEntry.getRegularMarketPrice(), movingAverage));
+            sum -= fullData.get(i - 329).getRegularMarketPrice();
         }
-    
-        logger.info("Calculated {} moving average points for symbol {}", movingAverages.size(), symbol);
-        return movingAverages;
-    }
-    
-    public Map<String, Object> get5MinDataWithMA(String symbol) {
-        Map<String, Object> response = new HashMap<>();
-    
-        // Fetch 5-min stock data
-        Map<String, Object> stockData = get5MinData(symbol);
-        response.put("stockData", stockData.values().iterator().next());
-    
-        // Get 3-day moving average time series
-        List<TStocksPriceEntity> movingAverageList = calculate3DayMovingAverage(symbol);
-        response.put("movingAverages", movingAverageList);
-    
-        return response;
+        
+        logger.info("Line Points: {}", linePoints);
+        redisManager.set("LINEPT-" + symbol, linePoints, Duration.ofMinutes(5));
+        return Map.of("linePoints", linePoints);
+        
     }
     
 }

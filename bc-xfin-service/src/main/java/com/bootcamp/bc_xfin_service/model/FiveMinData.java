@@ -1,4 +1,4 @@
-package com.bootcamp.bc_xfin_service.model.dto;
+package com.bootcamp.bc_xfin_service.model;
 
 import java.util.List;
 

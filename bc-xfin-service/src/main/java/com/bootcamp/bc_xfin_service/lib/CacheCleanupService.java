@@ -32,6 +32,8 @@ public class CacheCleanupService {
             return; // Skip this execution
         }
 
+        redisManager.delete("STOCK-LIST");
+
         List<String> stocks = List.of("0388.HK", "0700.HK", "0005.HK");
 
         for (String stock : stocks) {

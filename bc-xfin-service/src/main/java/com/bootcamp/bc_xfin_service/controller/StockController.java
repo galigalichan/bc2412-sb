@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.bootcamp.bc_xfin_service.service.impl.StockServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,7 +41,7 @@ public class StockController {
     }
 
     @GetMapping(value = "/5min/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> get5MinDataWithMA(@PathVariable String symbol) {
+    public ResponseEntity<Map<String, Object>> get5MinDataWithMA(@PathVariable String symbol) throws JsonProcessingException {
         return ResponseEntity.ok(stockServiceImpl.get5MinDataWithMA(symbol));
     }
 

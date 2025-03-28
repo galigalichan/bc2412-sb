@@ -22,7 +22,7 @@ import com.bootcamp.bc_xfin_service.repository.TStocksPriceRepository; // Assume
 import com.bootcamp.bc_xfin_service.service.HolidayService;
 import com.bootcamp.bc_xfin_service.service.StockPriceService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.bootcamp.bc_xfin_service.model.dto.FiveMinData;
+import com.bootcamp.bc_xfin_service.model.FiveMinData;
 import com.bootcamp.bc_xfin_service.model.dto.QuoteDto;
 import com.bootcamp.bc_xfin_service.model.dto.QuoteDto.QuoteResponse.Result;
 import com.bootcamp.bc_xfin_service.model.dto.StocksPriceDTO;
@@ -45,7 +45,6 @@ public class StockPriceServiceImpl implements StockPriceService {
 
     private static final List<String> STOCKS = List.of("0388.HK", "0700.HK", "0005.HK");
 
-    @Scheduled(cron = "0 45 9  * * MON-FRI")
     @Scheduled(cron = "0 50 9  * * MON-FRI")
     @Scheduled(cron = "0 55 9  * * MON-FRI")
     @Scheduled(cron = "0 0/5 10-11 * * MON-FRI")
@@ -53,7 +52,6 @@ public class StockPriceServiceImpl implements StockPriceService {
     @Scheduled(cron = "0 5 12  * * MON-FRI")
     @Scheduled(cron = "0 10 12  * * MON-FRI")
     @Scheduled(cron = "0 15 12  * * MON-FRI")
-    @Scheduled(cron = "0 15 13  * * MON-FRI")
     @Scheduled(cron = "0 20 13  * * MON-FRI")
     @Scheduled(cron = "0 25 13  * * MON-FRI")
     @Scheduled(cron = "0 30 13  * * MON-FRI")
@@ -161,12 +159,6 @@ public class StockPriceServiceImpl implements StockPriceService {
         selectedData.setMarketUnixTime(null); // Set this later when saving to DB
     
         return selectedData;
-    }
-
-    @Scheduled(cron = "0 55 8 * * MON-FRI") // Every day at 08:55
-    public void clearCache() {
-        String redisKey = "STOCK-LIST";
-        redisManager.delete(redisKey);
     }
 
 }
