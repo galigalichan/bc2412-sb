@@ -86,13 +86,13 @@ public class StockServiceImpl implements StockService {
     
     private LocalDate getSystemDateFromRedis(String key) {
         try {
-            String json = redisManager.get(key, String.class);
-            if (json == null) {
+            String dateStr = redisManager.get(key, String.class);
+            if (dateStr == null) {
                 return null;
             }
-            return objectMapper.readValue(json, LocalDate.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            return LocalDate.parse(dateStr); // Directly parse instead of using ObjectMapper
+        } catch (Exception e) {
+            logger.error("Failed to retrieve system date from Redis for {}: {}", key, e.getMessage());
             return null;
         }
     }
@@ -100,35 +100,36 @@ public class StockServiceImpl implements StockService {
     @Override
     public Map<String, String> getSystemDate(String symbol) {
         String redisKey = "SYSDATE-".concat(symbol);
-
-        // Check Redis first
-        LocalDate systemDateFromRedis = getSystemDateFromRedis(redisKey);
-        if (systemDateFromRedis != null) {
-            logger.info("System date for {} retrieved from Redis: {}", symbol, systemDateFromRedis);
-            return Collections.singletonMap(redisKey, systemDateFromRedis.toString()); // Convert to String
+    
+        // Try fetching from Redis
+        LocalDate systemDate = getSystemDateFromRedis(redisKey);
+        if (systemDate != null) {
+            logger.info("System date for {} retrieved from Redis: {}", symbol, systemDate);
+            return Collections.singletonMap(redisKey, systemDate.toString());
         }
-
-        // Fetch max regularMarketTime from DB
+    
+        // Try fetching from the database
         Optional<TStocksPriceEntity> latestStock = tStocksPriceRepository.findTopBySymbolOrderByRegularMarketTimeDesc(symbol);
-
         if (latestStock.isPresent()) {
-            LocalDate systemDateFromDB = Instant.ofEpochSecond(latestStock.get().getRegularMarketTime())
-                                                .atZone(ZoneId.of("Asia/Hong_Kong"))
-                                                .toLocalDate();
-            logger.info("System date for {} retrieved from DB: {}", symbol, systemDateFromDB);
-
-            try {
-                redisManager.set(redisKey, systemDateFromDB, Duration.ofHours(8));
-                logger.info("System date for {} cached in Redis: {}", symbol, systemDateFromDB);
-            } catch (JsonProcessingException e) {
-                logger.error("Failed to cache system date in Redis for {}: {}", symbol, e.getMessage());
-            }
-
-            return Collections.singletonMap(redisKey, systemDateFromDB.toString()); // Convert to String
+            systemDate = Instant.ofEpochSecond(latestStock.get().getRegularMarketTime())
+                                .atZone(ZoneId.of("Asia/Hong_Kong"))
+                                .toLocalDate();
+            logger.info("System date for {} retrieved from DB: {}", symbol, systemDate);
+        } else {
+            // If no data in DB, use today's date
+            systemDate = LocalDate.now(ZoneId.of("Asia/Hong_Kong"));
+            logger.warn("No system date found for symbol: {}. Using today's date: {}", symbol, systemDate);
         }
-
-        logger.warn("No system date found for symbol: {}", symbol);
-        return Collections.singletonMap(redisKey, null);
+    
+        // Cache the result in Redis for 8 hours
+        try {
+            redisManager.set(redisKey, systemDate.toString(), Duration.ofHours(8));
+            logger.info("System date for {} cached in Redis: {}", symbol, systemDate);
+        } catch (JsonProcessingException e) {
+            logger.error("Failed to cache system date in Redis for {}: {}", symbol, e.getMessage());
+        }
+    
+        return Collections.singletonMap(redisKey, systemDate.toString());
     }
 
     public Map<String, Object> get5MinData(String symbol) {
@@ -204,10 +205,11 @@ public class StockServiceImpl implements StockService {
         }
         
         Object rawData = fiveMinDataResponse.get("5MIN-" + symbol);
-        FiveMinData fiveMinData = new FiveMinData();
+        FiveMinData fiveMinData;
         
         if (rawData instanceof List<?>) {
             // If it's a list, set it as the data field
+            fiveMinData = new FiveMinData();
             fiveMinData.setData(objectMapper.convertValue(rawData, new TypeReference<List<TStocksPriceEntity>>() {}));
         } else {
             fiveMinData = objectMapper.convertValue(rawData, FiveMinData.class);
@@ -217,34 +219,54 @@ public class StockServiceImpl implements StockService {
         if (stockDataList == null || stockDataList.isEmpty()) {
             return Collections.emptyMap();
         }
-        
+
         // Find the earliest timestamp from today's data
         long earliestTimestamp = stockDataList.get(0).getRegularMarketTime();
+        logger.info("Earliest timestamp for {}: {}", symbol, earliestTimestamp);
         
         // Retrieve the 329 preceding entries from the database
         List<TStocksPriceEntity> historicalData = tStocksPriceRepository.findPreviousEntries(symbol, earliestTimestamp, 329);
+        
+        // Reverse to ensure chronological order (oldest first)
         Collections.reverse(historicalData);
+        logger.info("Historical data count for {}: {}", symbol, historicalData.size());
 
-        // Combine historical data with today's data
+        // Combine historical and today's data
         List<TStocksPriceEntity> fullData = new ArrayList<>(historicalData);
         fullData.addAll(stockDataList);
+        logger.info("Full data count (historical + today's) for {}: {}", symbol, fullData.size());
+
+        // Prepare list of line points for response
+        List<LinePoint> linePoints = new ArrayList<>();
+    
+        // If not enough historical data, return today's prices with null MA
+        if (fullData.size() < 330) {
+            logger.warn("Not enough data to calculate MA for {}. Data count: {}", symbol, fullData.size());
+            for (TStocksPriceEntity entry : stockDataList) {
+                linePoints.add(new LinePoint(entry.getRegularMarketTime(), entry.getRegularMarketPrice(), null));
+            }
+            return Map.of("linePoints", linePoints);
+        }
         
         // Calculate moving averages using a sliding window
-        List<LinePoint> linePoints = new ArrayList<>();
-        double sum = fullData.stream().limit(329).mapToDouble(TStocksPriceEntity::getRegularMarketPrice).sum();
-        
+        double sum = fullData.subList(0,329).stream().mapToDouble(TStocksPriceEntity::getRegularMarketPrice).sum();
         for (int i = 329; i < fullData.size(); i++) {
             TStocksPriceEntity currentEntry = fullData.get(i);
             sum += currentEntry.getRegularMarketPrice();
             double movingAverage = sum / 330;
+
             linePoints.add(new LinePoint(currentEntry.getRegularMarketTime(), currentEntry.getRegularMarketPrice(), movingAverage));
+            
+            // Subtract the earliest value in the window to maintain the rolling sum
             sum -= fullData.get(i - 329).getRegularMarketPrice();
         }
         
-        logger.info("Line Points: {}", linePoints);
-        redisManager.set("LINEPT-" + symbol, linePoints, Duration.ofMinutes(5));
-        return Map.of("linePoints", linePoints);
+        logger.info("Generated {} line points for {}", linePoints.size(), symbol);
         
+        // Cache result in Redis for 5 minutes
+        redisManager.set("LINEPT-" + symbol, linePoints, Duration.ofMinutes(5));
+        
+        return Map.of("linePoints", linePoints);
     }
     
 }

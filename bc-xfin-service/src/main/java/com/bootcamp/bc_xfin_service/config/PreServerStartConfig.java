@@ -37,7 +37,7 @@ public class PreServerStartConfig implements CommandLineRunner {
         redisHelper.delete(redisKey);
         logger.info("Cleared Redis entry: {}", redisKey);
     
-        List<String> stocks = List.of("0388.HK", "0700.HK", "0005.HK");
+        List<String> stocks = List.of("0388.HK", "0700.HK", "0005.HK", "0939.HK", "1299.HK", "1398.HK", "9988.HK", "3690.HK", "1810.HK", "0941.HK");
     
         // Store the stock list in Redis
         redisHelper.set(redisKey, stocks, Duration.ofHours(12));

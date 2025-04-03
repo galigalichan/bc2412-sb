@@ -1,5 +1,7 @@
 package com.bootcamp.bc_xfin_service;
 
+import java.util.TimeZone;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -11,6 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class BcXfinServiceApplication {
 
 	public static void main(String[] args) {
+		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Hong_Kong")); // Force app to use Hong Kong time
 		SpringApplication.run(BcXfinServiceApplication.class, args);
 	}
 
