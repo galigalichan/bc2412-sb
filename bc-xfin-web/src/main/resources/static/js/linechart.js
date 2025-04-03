@@ -123,15 +123,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }:${date.getMinutes().toString().padStart(2, "0")}`;
 
     // Get prices from both series
-    const stockPrice = param.seriesData.get(stockPriceSeries)?.value || "N/A";
-    const movingAvg = param.seriesData.get(movingAverageSeries)?.value || "N/A";
+    const stockPriceData = param.seriesData.get(stockPriceSeries);
+    const movingAvgData = param.seriesData.get(movingAverageSeries);
 
-    // console.log("Tooltip Time (GMT+8):", formattedTime, "Price:", price);
+    const stockPrice = stockPriceData && stockPriceData.value !== undefined ? stockPriceData.value.toFixed(2) : "N/A";
+    const movingAvg = movingAvgData && movingAvgData.value !== undefined ? movingAvgData.value.toFixed(2) : "N/A";
 
     // Set tooltip text with both values
     tooltip.innerHTML = `${formattedTime}<br>
-                         Price: <span style="color:#26a69a">${stockPrice.toFixed(2)}</span><br>
-                         SMA(5): <span style="color:#ff9800">${movingAvg.toFixed(2)}</span>`;
+                         Price: <span style="color:#26a69a">${stockPrice}</span><br>
+                         SMA(5): <span style="color:#ff9800">${movingAvg}</span>`;
     tooltip.style.display = "block";
 
     if (param.point) {
@@ -149,6 +150,11 @@ document.addEventListener("DOMContentLoaded", function () {
     
       console.log("Raw Data from API:", data);
 
+      if (!data || data.length === 0) {
+        console.warn(`No stock data available for ${symbol}.`);
+        return;
+      }
+
       // Transform stock prices
       const stockPrices = data
         .filter(entry => entry.close != null)
@@ -157,7 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
             value: entry.close}))
         .sort((a, b) => a.time - b.time);
 
-      // Transform moving averages
+      // Transform moving averages (if available)
       const movingAverages = data
           .filter(entry => entry.movingAverage != null)
           .map(entry => ({
@@ -165,13 +171,17 @@ document.addEventListener("DOMContentLoaded", function () {
               value: entry.movingAverage}))
           .sort((a, b) => a.time - b.time);
 
-      // Validate data before updating chart
-      const isValidStockData = stockPrices.every(entry => typeof entry.time === 'number' && typeof entry.value === 'number');
-      const isValidMovingAvg = movingAverages.every(entry => typeof entry.time === 'number' && typeof entry.value === 'number');
+      // Validate stock prices before updating chart
+      const isValidStockData = stockPrices.length > 0 &&
+        stockPrices.every(entry => typeof entry.time === 'number' && typeof entry.value === 'number');
 
-      if (!isValidStockData || !isValidMovingAvg) {
-          console.error("Invalid stock or moving average data found!", stockPrices, movingAverages);
-          return;
+      // Validate moving averages (but allow empty)
+      const isValidMovingAvg = movingAverages.length === 0 || 
+        movingAverages.every(entry => typeof entry.time === 'number' && typeof entry.value === 'number');
+
+      if (!isValidStockData) {
+        console.error("Invalid stock price data!", stockPrices);
+        return;
       }
 
       console.log("Transformed Stock Prices:", stockPrices);
@@ -179,7 +189,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Set data separately for each series
       stockPriceSeries.setData(stockPrices);
-      movingAverageSeries.setData(movingAverages);
+
+      // Only update moving average series if valid data is available
+      if (isValidMovingAvg && movingAverages.length > 0) {
+        movingAverageSeries.setData(movingAverages);
+      } else {
+        console.warn("Not enough data for moving averages, skipping MA plot.");
+      }
 
       chart.timeScale().fitContent();
     } catch (error) {
