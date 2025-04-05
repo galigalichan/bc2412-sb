@@ -1,4 +1,4 @@
-package com.bootcamp.bc_xfin_service.config;
+package com.bootcamp.bc_xfin_service.lib;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;

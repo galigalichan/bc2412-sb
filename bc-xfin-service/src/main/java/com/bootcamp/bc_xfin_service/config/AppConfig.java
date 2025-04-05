@@ -2,6 +2,7 @@ package com.bootcamp.bc_xfin_service.config;
 
 import com.bootcamp.bc_xfin_service.lib.CookieInterceptor;
 import com.bootcamp.bc_xfin_service.lib.CookieManager;
+import com.bootcamp.bc_xfin_service.lib.HttpHeadersConfig;
 
 import java.util.ArrayList;
 

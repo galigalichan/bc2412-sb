@@ -43,7 +43,10 @@ public class StockPriceServiceImpl implements StockPriceService {
     @Autowired
     private HolidayService holidayService;
 
-    private static final List<String> STOCKS = List.of("0388.HK", "0700.HK", "0005.HK", "0939.HK", "1299.HK", "1398.HK", "9988.HK", "3690.HK", "1810.HK", "0941.HK");
+    private static final List<String> STOCKS = List.of(
+        "0388.HK", "0700.HK", "0005.HK", "0939.HK", "1299.HK",
+        "1398.HK", "0941.HK", "1211.HK", "0833.HK", "0016.HK"
+    );
 
     @Scheduled(cron = "0 50 9  * * MON-FRI")
     @Scheduled(cron = "0 55 9  * * MON-FRI")

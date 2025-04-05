@@ -40,7 +40,7 @@ public class StockController {
         return ResponseEntity.ok(stockServiceImpl.get5MinData(symbol));
     }
 
-    @GetMapping(value = "/5min/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/5min/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE) // for explicit JSON response
     public ResponseEntity<Map<String, Object>> get5MinDataWithMA(@PathVariable String symbol) throws JsonProcessingException {
         return ResponseEntity.ok(stockServiceImpl.get5MinDataWithMA(symbol));
     }
