@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
-@RequestMapping("/api/yahoo")
+@RequestMapping("/api")
 @CrossOrigin(origins = "*")  // Allow cross-origin requests (adjust if needed)
 public class StockController {
     @Autowired

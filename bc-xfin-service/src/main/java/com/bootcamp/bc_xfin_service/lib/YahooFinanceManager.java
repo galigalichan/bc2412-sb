@@ -4,6 +4,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.bootcamp.bc_xfin_service.config.HttpHeadersConfig;
 import com.bootcamp.bc_xfin_service.model.dto.QuoteDto;
 import com.bootcamp.bc_xfin_service.model.dto.YahooFinanceChartDto;
 

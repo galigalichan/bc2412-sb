@@ -19,12 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.bootcamp.bc_xfin_service.entity.TStockEntity;
+import com.bootcamp.bc_xfin_service.config.RedisManager;
+import com.bootcamp.bc_xfin_service.config.StockSymbolProperties;
 import com.bootcamp.bc_xfin_service.entity.TStocksPriceEntity;
-import com.bootcamp.bc_xfin_service.lib.RedisManager;
 import com.bootcamp.bc_xfin_service.model.FiveMinData;
 import com.bootcamp.bc_xfin_service.model.LinePoint;
-import com.bootcamp.bc_xfin_service.repository.TStockRepository;
 import com.bootcamp.bc_xfin_service.repository.TStocksPriceRepository;
 import com.bootcamp.bc_xfin_service.service.StockService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,15 +34,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class StockServiceImpl implements StockService {
     private static final Logger logger = LoggerFactory.getLogger(StockPriceServiceImpl.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final StockSymbolProperties stockSymbolProperties;
 
     @Autowired
     private RedisManager redisManager;
 
     @Autowired
-    private TStockRepository tStockRepository;
-
-    @Autowired
     private TStocksPriceRepository tStocksPriceRepository;
+
+    public StockServiceImpl(StockSymbolProperties stockSymbolProperties) {
+        this.stockSymbolProperties = stockSymbolProperties;
+    }
 
     private List<String> getStockListFromRedis(String key) {
         try {
@@ -67,20 +68,17 @@ public class StockServiceImpl implements StockService {
             return Collections.singletonMap("STOCK-LIST", stockListFromRedis);
         }
 
-        // Fetch from DB if not found in Redis
-        List<TStockEntity> tStockFromDB = tStockRepository.findAll();
-        List<String> stockListFromDB = tStockFromDB.stream()
-                .map(TStockEntity::getSymbol)
-                .collect(Collectors.toList());
+        // Fetch from StockSymbolProperties if not found in Redis
+        List<String> stocks = stockSymbolProperties.getSymbols();
 
         try {
             // Store in Redis with 24-hour expiry
-            redisManager.set(redisKey, stockListFromDB, Duration.ofHours(24));
+            redisManager.set(redisKey, stocks, Duration.ofHours(24));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
-        return Collections.singletonMap("STOCK-LIST", stockListFromDB);
+        return Collections.singletonMap("STOCK-LIST", stocks);
     }
 
     

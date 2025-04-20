@@ -1,5 +1,6 @@
 package com.bootcamp.bc_xfin_service.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,12 +18,14 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "TSTOCKS_PRICE_OHLCV")
+@Table(name = "tstocks_price_ohlcv")
 public class OHLCVEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "symbol")
     private String symbol;
+    @Column(name = "timestamp")
     private Long timestamp;
     private Double open;
     private Double high;

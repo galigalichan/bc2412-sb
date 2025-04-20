@@ -4,9 +4,9 @@ server:
 spring:
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/bc-xfin-service
-    username: postgres
-    password: admin1234
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:bc-xfin-service}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASS:}
 
   jpa:
     show-sql: true
@@ -17,10 +17,40 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
       hibernate:
+        format_sql: true
+        # use_sql_comments: true
+        # type:
+        #   descriptor:
+        #     sql:
+        #       BasicBinder: TRACE
         jdbc:
           time_zone: "Asia/Hong_Kong"
 
   data:
     redis:
-      host: redisserver
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+# logging:
+#   level:
+#     org.hibernate.SQL: DEBUG
+#     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+recovery:
+  secret-token: ${RECOVERY_SECRET}
+
+validation:
+  auto-fix-enabled: true
+
+stocks:
+  symbols:
+    - 0388.HK #香港交易所
+    - 0700.HK #騰訊控股
+    - 0005.HK #匯豐控股
+    - 0939.HK #建設銀行
+    - 1299.HK #友邦保險
+    - 1398.HK #工商銀行
+    - 0941.HK #中國移動
+    - 1211.HK #比亞迪股份
+    - 0883.HK #中國海洋石油
+    - 0016.HK #新鴻基地產

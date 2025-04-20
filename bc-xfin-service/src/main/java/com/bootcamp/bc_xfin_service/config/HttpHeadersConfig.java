@@ -1,10 +1,10 @@
-package com.bootcamp.bc_xfin_service.lib;
+package com.bootcamp.bc_xfin_service.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Component;
 
-@Component
+@Configuration
 public class HttpHeadersConfig {
     private final HttpHeaders headers;
 

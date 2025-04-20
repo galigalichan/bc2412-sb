@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.bootcamp.bc_xfin_service.config.RedisManager;
+import com.bootcamp.bc_xfin_service.config.StockSymbolProperties;
 import com.bootcamp.bc_xfin_service.service.HolidayService;
 
 @Service
@@ -18,6 +20,9 @@ public class CacheCleanupService {
 
     @Autowired
     private RedisManager redisManager;
+
+    @Autowired
+    private StockSymbolProperties stockSymbolProperties;
 
     @Autowired
     private HolidayService holidayService;
@@ -34,10 +39,7 @@ public class CacheCleanupService {
 
         redisManager.delete("STOCK-LIST");
 
-        List<String> stocks = List.of(
-            "0388.HK", "0700.HK", "0005.HK", "0939.HK", "1299.HK",
-            "1398.HK", "0941.HK", "1211.HK", "0833.HK", "0016.HK"
-        );
+        List<String> stocks = stockSymbolProperties.getSymbols();
 
         for (String stock : stocks) {
             redisManager.delete("SYSDATE-" + stock);

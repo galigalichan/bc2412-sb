@@ -5,13 +5,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bootcamp.bc_xfin_service.service.impl.OHLCVServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @RestController
 @RequestMapping("/api/ohlcv")
@@ -42,5 +47,20 @@ public class OHLCVController {
             e.printStackTrace();
             return ResponseEntity.status(500).body("An error occurred during locking.");
         }
+    }
+
+    @GetMapping(value = "/daily/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getDailyOhlcvData(@PathVariable String symbol) throws JsonProcessingException {
+        return ResponseEntity.ok(ohlcvServiceImpl.getDailyOhlcvData(symbol));
+    }
+
+    @GetMapping(value = "/weekly/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getWeeklyOhclvData(@PathVariable String symbol) throws JsonProcessingException {
+        return ResponseEntity.ok(ohlcvServiceImpl.getWeeklyOhlcvData(symbol));
+    }
+
+    @GetMapping(value = "/monthly/{symbol}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getMonthlyOhclvData(@PathVariable String symbol) throws JsonProcessingException {
+        return ResponseEntity.ok(ohlcvServiceImpl.getMonthlyOhlcvData(symbol));
     }
 }

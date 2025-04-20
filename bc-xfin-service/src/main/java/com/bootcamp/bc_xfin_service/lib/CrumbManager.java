@@ -6,6 +6,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.bootcamp.bc_xfin_service.config.HttpHeadersConfig;
+
 @Service
 public class CrumbManager {
     private static final Logger logger = LoggerFactory.getLogger(CrumbManager.class);

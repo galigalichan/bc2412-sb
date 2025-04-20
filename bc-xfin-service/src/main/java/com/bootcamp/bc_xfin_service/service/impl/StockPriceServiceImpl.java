@@ -15,10 +15,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.bootcamp.bc_xfin_service.codewave.Type;
+import com.bootcamp.bc_xfin_service.config.RedisManager;
+import com.bootcamp.bc_xfin_service.config.StockSymbolProperties;
 import com.bootcamp.bc_xfin_service.entity.TStocksPriceEntity;
-import com.bootcamp.bc_xfin_service.lib.RedisManager;
 import com.bootcamp.bc_xfin_service.lib.YahooFinanceManager;
-import com.bootcamp.bc_xfin_service.repository.TStocksPriceRepository; // Assume you have a repository for TStocksPriceEntity
+import com.bootcamp.bc_xfin_service.repository.TStocksPriceRepository;
 import com.bootcamp.bc_xfin_service.service.HolidayService;
 import com.bootcamp.bc_xfin_service.service.StockPriceService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,6 +31,7 @@ import com.bootcamp.bc_xfin_service.model.dto.StocksPriceDTO;
 @Service
 public class StockPriceServiceImpl implements StockPriceService {
     private static final Logger logger = LoggerFactory.getLogger(StockPriceServiceImpl.class);
+    private final StockSymbolProperties stockSymbolProperties;
 
     @Autowired
     private TStocksPriceRepository stocksPriceRepository;
@@ -43,10 +45,9 @@ public class StockPriceServiceImpl implements StockPriceService {
     @Autowired
     private HolidayService holidayService;
 
-    private static final List<String> STOCKS = List.of(
-        "0388.HK", "0700.HK", "0005.HK", "0939.HK", "1299.HK",
-        "1398.HK", "0941.HK", "1211.HK", "0833.HK", "0016.HK"
-    );
+    public StockPriceServiceImpl(StockSymbolProperties stockSymbolProperties) {
+        this.stockSymbolProperties = stockSymbolProperties;
+    }
 
     @Scheduled(cron = "0 50 9  * * MON-FRI")
     @Scheduled(cron = "0 55 9  * * MON-FRI")
@@ -77,7 +78,9 @@ public class StockPriceServiceImpl implements StockPriceService {
             return; // Skip this execution
         }
 
-        for (String symbol : STOCKS) {
+        List<String> stocks = stockSymbolProperties.getSymbols();
+
+        for (String symbol : stocks) {
             // Fetch the stock price data
             StocksPriceDTO stockData = fetchStockData(symbol);
             if (stockData == null) {

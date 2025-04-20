@@ -11,7 +11,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import com.bootcamp.bc_xfin_service.entity.TStockEntity;
-import com.bootcamp.bc_xfin_service.lib.RedisManager;
 import com.bootcamp.bc_xfin_service.repository.TStockRepository;
 
 import jakarta.transaction.Transactional;
@@ -19,10 +18,13 @@ import jakarta.transaction.Transactional;
 @Component
 @Transactional
 public class PreServerStartConfig implements CommandLineRunner {
-    private static final Logger logger = LoggerFactory.getLogger(PreServerStartConfig.class);
+    private static final Logger log = LoggerFactory.getLogger(PreServerStartConfig.class);
 
     @Autowired
     private RedisManager redisHelper;
+
+    @Autowired
+    private StockSymbolProperties stockSymbolProperties;
     
     @Autowired
     private TStockRepository tStockRepository;
@@ -35,22 +37,19 @@ public class PreServerStartConfig implements CommandLineRunner {
     
         // Clear stock list cache on startup
         redisHelper.delete(redisKey);
-        logger.info("Cleared Redis entry: {}", redisKey);
+        log.info("Cleared Redis entry: {}", redisKey);
     
-        List<String> stocks = List.of(
-            "0388.HK", "0700.HK", "0005.HK", "0939.HK", "1299.HK",
-            "1398.HK", "0941.HK", "1211.HK", "0833.HK", "0016.HK"
-        );
+        List<String> stocks = stockSymbolProperties.getSymbols();
     
         // Store the stock list in Redis
         redisHelper.set(redisKey, stocks, Duration.ofHours(12));
-        logger.info("Stored stock list in Redis under key: {}", redisKey);
+        log.info("Stored stock list in Redis under key: {}", redisKey);
     
         // Delete all system date and 5-min Redis entries
         for (String stock : stocks) {
             redisHelper.delete("SYSDATE-" + stock);
             redisHelper.delete("5MIN-" + stock);
-            logger.info("Cleared Redis system date and 5-min data for: {}", stock);
+            log.info("Cleared Redis system date and 5-min data for: {}", stock);
     
             // Ensure stock exists in DB
             if (tStockRepository.findBySymbol(stock).isEmpty()) {
@@ -59,7 +58,7 @@ public class PreServerStartConfig implements CommandLineRunner {
                 try {
                     tStockRepository.save(tStockEntity);
                 } catch (StaleObjectStateException e) {
-                    logger.error("Failed to save stock {}: {}", stock, e.getMessage());
+                    log.error("Failed to save stock {}: {}", stock, e.getMessage());
                 }
             }
         }

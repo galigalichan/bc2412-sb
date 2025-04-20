@@ -1,0 +1,161 @@
+=== Data Validation Report ===
+Generated at: 2025-04-09 02:37:18
+
+--- Missing Timestamps ---
+None
+
+--- Extra Timestamps ---
+None
+
+--- Corrupted Records ---
+None
+
+--- Timestamp Conflicts ---
+Symbol: 1299.HK → Mismatch on 2025-04-08
+  DB timestamps:
+    - 2025-04-08 16:08:53 (1744099733)
+  Yahoo timestamps:
+    - 2025-04-08 09:30:00 (1744075800)
+Symbol: 1299.HK → Mismatch on 2025-04-07
+  DB timestamps:
+    - 2025-04-07 16:09:04 (1744013344)
+  Yahoo timestamps:
+    - 2025-04-07 09:30:00 (1743989400)
+Symbol: 0016.HK → Mismatch on 2025-04-08
+  DB timestamps:
+    - 2025-04-08 16:08:52 (1744099732)
+  Yahoo timestamps:
+    - 2025-04-08 09:30:00 (1744075800)
+Symbol: 0016.HK → Mismatch on 2025-04-07
+  DB timestamps:
+    - 2025-04-07 16:09:04 (1744013344)
+  Yahoo timestamps:
+    - 2025-04-07 09:30:00 (1743989400)
+Symbol: 1398.HK → Mismatch on 2025-04-08
+  DB timestamps:
+    - 2025-04-08 16:08:53 (1744099733)
+  Yahoo timestamps:
+    - 2025-04-08 09:30:00 (1744075800)
+Symbol: 1398.HK → Mismatch on 2025-04-07
+  DB timestamps:
+    - 2025-04-07 16:09:04 (1744013344)
+  Yahoo timestamps:
+    - 2025-04-07 09:30:00 (1743989400)
+Symbol: 0941.HK → Mismatch on 2025-04-08
+  DB timestamps:
+    - 2025-04-08 16:08:52 (1744099732)
+  Yahoo timestamps:
+    - 2025-04-08 09:30:00 (1744075800)
+Symbol: 0941.HK → Mismatch on 2025-04-07
+  DB timestamps:
+    - 2025-04-07 16:09:04 (1744013344)
+  Yahoo timestamps:
+    - 2025-04-07 09:30:00 (1743989400)
+Symbol: 0883.HK → Mismatch on 2025-04-08
+  DB timestamps:
+    - 2025-04-08 16:08:52 (1744099732)
+  Yahoo timestamps:
+    - 2025-04-08 09:30:00 (1744075800)
+Symbol: 0883.HK → Mismatch on 2025-04-07
+  DB timestamps:
+    - 2025-04-07 16:09:04 (1744013344)
+  Yahoo timestamps:
+    - 2025-04-07 09:30:00 (1743989400)
+Symbol: 0700.HK → Mismatch on 2025-04-08
+  DB timestamps:
+    - 2025-04-08 16:08:52 (1744099732)
+  Yahoo timestamps:
+    - 2025-04-08 09:30:00 (1744075800)
+Symbol: 0700.HK → Mismatch on 2025-04-07
+  DB timestamps:
+    - 2025-04-07 16:09:04 (1744013344)
+  Yahoo timestamps:
+    - 2025-04-07 09:30:00 (1743989400)
+Symbol: 0939.HK → Mismatch on 2025-04-08
+  DB timestamps:
+    - 2025-04-08 16:08:52 (1744099732)
+  Yahoo timestamps:
+    - 2025-04-08 09:30:00 (1744075800)
+Symbol: 0939.HK → Mismatch on 2025-04-07
+  DB timestamps:
+    - 2025-04-07 16:09:04 (1744013344)
+  Yahoo timestamps:
+    - 2025-04-07 09:30:00 (1743989400)
+Symbol: 0005.HK → Mismatch on 2025-04-08
+  DB timestamps:
+    - 2025-04-08 16:08:52 (1744099732)
+  Yahoo timestamps:
+    - 2025-04-08 09:30:00 (1744075800)
+Symbol: 0005.HK → Mismatch on 2025-04-07
+  DB timestamps:
+    - 2025-04-07 16:09:04 (1744013344)
+  Yahoo timestamps:
+    - 2025-04-07 09:30:00 (1743989400)
+Symbol: 1211.HK → Mismatch on 2025-04-08
+  DB timestamps:
+    - 2025-04-08 16:08:52 (1744099732)
+  Yahoo timestamps:
+    - 2025-04-08 09:30:00 (1744075800)
+Symbol: 1211.HK → Mismatch on 2025-04-07
+  DB timestamps:
+    - 2025-04-07 16:09:04 (1744013344)
+  Yahoo timestamps:
+    - 2025-04-07 09:30:00 (1743989400)
+Symbol: 0388.HK → Mismatch on 2025-04-08
+  DB timestamps:
+    - 2025-04-08 16:08:52 (1744099732)
+  Yahoo timestamps:
+    - 2025-04-08 09:30:00 (1744075800)
+Symbol: 0388.HK → Mismatch on 2025-04-07
+  DB timestamps:
+    - 2025-04-07 16:09:04 (1744013344)
+  Yahoo timestamps:
+    - 2025-04-07 09:30:00 (1743989400)
+
+
+--- Applied Auto-Fixes ---
+Symbol: 0388.HK → 2 fixed:
+  - ID: 2527 → 2025-04-07 16:09:04 → 2025-04-08 09:30:00
+  - ID: 25271 → 2025-04-08 16:08:52 → 2025-04-07 09:30:00
+Symbol: 0700.HK → 2 fixed:
+  - ID: 5054 → 2025-04-07 16:09:04 → 2025-04-08 09:30:00
+  - ID: 25272 → 2025-04-08 16:08:52 → 2025-04-07 09:30:00
+Symbol: 0005.HK → 2 fixed:
+  - ID: 7581 → 2025-04-07 16:09:04 → 2025-04-08 09:30:00
+  - ID: 25273 → 2025-04-08 16:08:52 → 2025-04-07 09:30:00
+Symbol: 0939.HK → 2 fixed:
+  - ID: 10108 → 2025-04-07 16:09:04 → 2025-04-08 09:30:00
+  - ID: 25274 → 2025-04-08 16:08:52 → 2025-04-07 09:30:00
+Symbol: 1299.HK → 2 fixed:
+  - ID: 12635 → 2025-04-07 16:09:04 → 2025-04-08 09:30:00
+  - ID: 25275 → 2025-04-08 16:08:53 → 2025-04-07 09:30:00
+Symbol: 1398.HK → 2 fixed:
+  - ID: 15162 → 2025-04-07 16:09:04 → 2025-04-08 09:30:00
+  - ID: 25276 → 2025-04-08 16:08:53 → 2025-04-07 09:30:00
+Symbol: 0941.HK → 2 fixed:
+  - ID: 17689 → 2025-04-07 16:09:04 → 2025-04-08 09:30:00
+  - ID: 25277 → 2025-04-08 16:08:52 → 2025-04-07 09:30:00
+Symbol: 1211.HK → 2 fixed:
+  - ID: 20216 → 2025-04-07 16:09:04 → 2025-04-08 09:30:00
+  - ID: 25278 → 2025-04-08 16:08:52 → 2025-04-07 09:30:00
+Symbol: 0883.HK → 2 fixed:
+  - ID: 22743 → 2025-04-07 16:09:04 → 2025-04-08 09:30:00
+  - ID: 25279 → 2025-04-08 16:08:52 → 2025-04-07 09:30:00
+Symbol: 0016.HK → 2 fixed:
+  - ID: 25270 → 2025-04-07 16:09:04 → 2025-04-08 09:30:00
+  - ID: 25280 → 2025-04-08 16:08:52 → 2025-04-07 09:30:00
+
+
+--- Failed Auto-Fixes ---
+Symbol: 0388.HK → 0 failed:
+Symbol: 0700.HK → 0 failed:
+Symbol: 0005.HK → 0 failed:
+Symbol: 0939.HK → 0 failed:
+Symbol: 1299.HK → 0 failed:
+Symbol: 1398.HK → 0 failed:
+Symbol: 0941.HK → 0 failed:
+Symbol: 1211.HK → 0 failed:
+Symbol: 0883.HK → 0 failed:
+Symbol: 0016.HK → 0 failed:
+
+=== Auto-Fix Summary: 20 applied, 0 failed ===
