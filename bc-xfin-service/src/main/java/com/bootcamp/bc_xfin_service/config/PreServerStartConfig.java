@@ -24,7 +24,7 @@ public class PreServerStartConfig implements CommandLineRunner {
     private RedisManager redisHelper;
 
     @Autowired
-    private StockSymbolProperties stockSymbolProperties;
+    private StocksProperties stocksProperties;
     
     @Autowired
     private TStockRepository tStockRepository;
@@ -39,7 +39,7 @@ public class PreServerStartConfig implements CommandLineRunner {
         redisHelper.delete(redisKey);
         log.info("Cleared Redis entry: {}", redisKey);
     
-        List<String> stocks = stockSymbolProperties.getSymbols();
+        List<String> stocks = stocksProperties.getSymbols();
     
         // Store the stock list in Redis
         redisHelper.set(redisKey, stocks, Duration.ofHours(12));

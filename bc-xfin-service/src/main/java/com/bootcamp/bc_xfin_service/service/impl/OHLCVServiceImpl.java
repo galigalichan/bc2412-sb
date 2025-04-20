@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.bootcamp.bc_xfin_service.config.StockSymbolProperties;
+import com.bootcamp.bc_xfin_service.config.StocksProperties;
 import com.bootcamp.bc_xfin_service.entity.OHLCVEntity;
 import com.bootcamp.bc_xfin_service.lib.YahooFinanceManager;
 import com.bootcamp.bc_xfin_service.model.CandleStick;
@@ -41,17 +41,17 @@ public class OHLCVServiceImpl implements OHLCVService {
     private final OHLCVRepository ohlcvRepository;
     private final YahooFinanceManager yahooFinanceManager;
     private final HolidayService holidayService;
-    private final StockSymbolProperties stockSymbolProperties;
+    private final StocksProperties stocksProperties;
     // private final DataSource dataSource;
     
     public OHLCVServiceImpl(OHLCVRepository ohlcvRepository,
                         YahooFinanceManager yahooFinanceManager,
                         HolidayService holidayService,
-                        StockSymbolProperties stockSymbolProperties) {
+                        StocksProperties stockSymbolProperties) {
         this.ohlcvRepository = ohlcvRepository;
         this.yahooFinanceManager = yahooFinanceManager;
         this.holidayService = holidayService;
-        this.stockSymbolProperties = stockSymbolProperties;
+        this.stocksProperties = stockSymbolProperties;
     }
 
     @Transactional
@@ -65,7 +65,7 @@ public class OHLCVServiceImpl implements OHLCVService {
         long startEpoch = today.atStartOfDay(ZoneId.of("Asia/Hong_Kong")).toEpochSecond();
         long endEpoch = startEpoch + 86400;
 
-        List<String> stocks = stockSymbolProperties.getSymbols();
+        List<String> stocks = stocksProperties.getSymbols();
 
         for (String symbol : stocks) {
             YahooFinanceChartDto chartDto = yahooFinanceManager.getHistoricalData(symbol, startEpoch, endEpoch);
@@ -75,7 +75,7 @@ public class OHLCVServiceImpl implements OHLCVService {
     }
 
     public void fetchAndSaveHistorical() {
-        List<String> stocks = stockSymbolProperties.getSymbols();
+        List<String> stocks = stocksProperties.getSymbols();
 
         Long endpoint = Instant.now().getEpochSecond(); // Current time
         Long startingPoint = 1420099200L; // Thu Jan 01 2015 16:00:00 GMT+0800
@@ -279,114 +279,6 @@ public class OHLCVServiceImpl implements OHLCVService {
         log.info("Returning {} candlestick entries for {}", candleSticks.size(), symbol);
         return Map.of("candleSticks", candleSticks);
     }
-
-    // @Override
-    // public Map<String, Object> getDailyOhlcvData(String symbol) {
-    //     long endTimestamp = Instant.now().getEpochSecond();
-    //     long startTimestamp = endTimestamp - 32L * 24 * 60 * 60; // 32 days in seconds
-
-    //     List<OhlcvRecordDTO> recentData = getOhlcvRecordsFromDb(symbol, startTimestamp, endTimestamp);
-    //     log.info("Recent {} entries fetched from DB for symbol {}", recentData.size(), symbol);
-
-    //     if (recentData.isEmpty()) {
-    //         log.warn("No recent OHLCV data found for symbol {}", symbol);
-    //         return Map.of("candleSticks", Collections.emptyList());
-    //     }
-
-    //     long firstRecentTimestamp = recentData.get(0).getTimestamp();
-    //     List<OHLCVEntity> historyEntities = ohlcvRepository.findPreviousEntries(symbol, firstRecentTimestamp, 149);
-    //     Collections.reverse(historyEntities);
-    //     List<OhlcvRecordDTO> historicalData = historyEntities.stream()
-    //         .map(e -> new OhlcvRecordDTO(e.getSymbol(), e.getTimestamp(), e.getOpen(), e.getHigh(), e.getLow(), e.getClose(), e.getVolume()))
-    //         .collect(Collectors.toList());
-
-    //     List<OhlcvRecordDTO> fullData = new ArrayList<>(historicalData);
-    //     fullData.addAll(recentData);
-
-    //     if (fullData.size() < 150) {
-    //         log.warn("Insufficient data for SMA150 calculation. Found only {} records for {}", fullData.size(), symbol);
-    //         return Map.of("candleSticks", Collections.emptyList());
-    //     }
-
-    //     List<CandleStick> candleSticks = new ArrayList<>();
-
-    //     // === SMA150 ===
-    //     double rollingSum150 = fullData.subList(0, 149).stream().mapToDouble(OhlcvRecordDTO::getClose).sum();
-    //     for (int i = 149; i < fullData.size(); i++) {
-    //         OhlcvRecordDTO current = fullData.get(i);
-    //         rollingSum150 += current.getClose();
-    //         double sma150 = rollingSum150 / 150;
-
-    //         CandleStick stick = new CandleStick(
-    //             current.getTimestamp(),
-    //             current.getOpen(), current.getHigh(), current.getLow(),
-    //             current.getClose(), current.getVolume(),
-    //             null, null, null, null, null, sma150
-    //         );
-    //         candleSticks.add(stick);
-
-    //         // Remove the earliest value in the 150-day window
-    //         rollingSum150 -= fullData.get(i - 149).getClose();
-    //     }
-
-    //     // === SMA100 ===
-    //     double rollingSum100 = fullData.subList(50, 149).stream().mapToDouble(OhlcvRecordDTO::getClose).sum();
-    //     for (int i = 149; i < fullData.size(); i++) {
-    //         OhlcvRecordDTO current = fullData.get(i);
-    //         rollingSum100 += current.getClose();
-    //         double sma100 = rollingSum100 / 100;
-
-    //         candleSticks.get(i - 149).setSma100(sma100);
-    //         rollingSum100 -= fullData.get(i - 99).getClose();
-    //     }
-
-    //     // === SMA50 ===
-    //     double rollingSum50 = fullData.subList(100, 149).stream().mapToDouble(OhlcvRecordDTO::getClose).sum();
-    //     for (int i = 149; i < fullData.size(); i++) {
-    //         OhlcvRecordDTO current = fullData.get(i);
-    //         rollingSum50 += current.getClose();
-    //         double sma50 = rollingSum50 / 50;
-
-    //         candleSticks.get(i - 149).setSma50(sma50);
-    //         rollingSum50 -= fullData.get(i - 49).getClose();
-    //     }
-
-    //     // === SMA30 ===
-    //     double rollingSum30 = fullData.subList(120, 149).stream().mapToDouble(OhlcvRecordDTO::getClose).sum();
-    //     for (int i = 149; i < fullData.size(); i++) {
-    //         OhlcvRecordDTO current = fullData.get(i);
-    //         rollingSum30 += current.getClose();
-    //         double sma30 = rollingSum30 / 30;
-
-    //         candleSticks.get(i - 149).setSma30(sma30);
-    //         rollingSum30 -= fullData.get(i - 29).getClose();
-    //     }
-
-    //     // === SMA20 ===
-    //     double rollingSum20 = fullData.subList(130, 149).stream().mapToDouble(OhlcvRecordDTO::getClose).sum();
-    //     for (int i = 149; i < fullData.size(); i++) {
-    //         OhlcvRecordDTO current = fullData.get(i);
-    //         rollingSum20 += current.getClose();
-    //         double sma20 = rollingSum20 / 20;
-
-    //         candleSticks.get(i - 149).setSma20(sma20);
-    //         rollingSum20 -= fullData.get(i - 19).getClose();
-    //     }
-
-    //     // === SMA10 ===
-    //     double rollingSum10 = fullData.subList(140, 149).stream().mapToDouble(OhlcvRecordDTO::getClose).sum();
-    //     for (int i = 149; i < fullData.size(); i++) {
-    //         OhlcvRecordDTO current = fullData.get(i);
-    //         rollingSum10 += current.getClose();
-    //         double sma10 = rollingSum10 / 10;
-
-    //         candleSticks.get(i - 149).setSma10(sma10);
-    //         rollingSum10 -= fullData.get(i - 9).getClose();
-    //     }
-
-    //     log.info("Returning {} candlestick entries for {}", candleSticks.size(), symbol);
-    //     return Map.of("candleSticks", candleSticks);
-    // }
 
     public Map<String, Object> getWeeklyOhlcvData(String symbol) {
         int maxSmaWeeks = 100;

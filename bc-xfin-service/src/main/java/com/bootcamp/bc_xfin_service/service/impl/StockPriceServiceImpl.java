@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.bootcamp.bc_xfin_service.codewave.Type;
 import com.bootcamp.bc_xfin_service.config.RedisManager;
-import com.bootcamp.bc_xfin_service.config.StockSymbolProperties;
+import com.bootcamp.bc_xfin_service.config.StocksProperties;
 import com.bootcamp.bc_xfin_service.entity.TStocksPriceEntity;
 import com.bootcamp.bc_xfin_service.lib.YahooFinanceManager;
 import com.bootcamp.bc_xfin_service.repository.TStocksPriceRepository;
@@ -31,7 +31,7 @@ import com.bootcamp.bc_xfin_service.model.dto.StocksPriceDTO;
 @Service
 public class StockPriceServiceImpl implements StockPriceService {
     private static final Logger logger = LoggerFactory.getLogger(StockPriceServiceImpl.class);
-    private final StockSymbolProperties stockSymbolProperties;
+    private final StocksProperties stocksProperties;
 
     @Autowired
     private TStocksPriceRepository stocksPriceRepository;
@@ -45,8 +45,8 @@ public class StockPriceServiceImpl implements StockPriceService {
     @Autowired
     private HolidayService holidayService;
 
-    public StockPriceServiceImpl(StockSymbolProperties stockSymbolProperties) {
-        this.stockSymbolProperties = stockSymbolProperties;
+    public StockPriceServiceImpl(StocksProperties stocksProperties) {
+        this.stocksProperties = stocksProperties;
     }
 
     @Scheduled(cron = "0 50 9  * * MON-FRI")
@@ -78,7 +78,7 @@ public class StockPriceServiceImpl implements StockPriceService {
             return; // Skip this execution
         }
 
-        List<String> stocks = stockSymbolProperties.getSymbols();
+        List<String> stocks = stocksProperties.getSymbols();
 
         for (String symbol : stocks) {
             // Fetch the stock price data

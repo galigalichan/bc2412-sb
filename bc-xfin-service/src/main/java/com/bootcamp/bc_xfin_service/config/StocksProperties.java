@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties(prefix = "stocks")
-public class StockSymbolProperties {
+public class StocksProperties {
     private List<String> symbols;
 
     public List<String> getSymbols() {

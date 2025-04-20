@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bootcamp.bc_xfin_service.config.RedisManager;
-import com.bootcamp.bc_xfin_service.config.StockSymbolProperties;
+import com.bootcamp.bc_xfin_service.config.StocksProperties;
 import com.bootcamp.bc_xfin_service.entity.TStocksPriceEntity;
 import com.bootcamp.bc_xfin_service.model.FiveMinData;
 import com.bootcamp.bc_xfin_service.model.LinePoint;
@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class StockServiceImpl implements StockService {
     private static final Logger logger = LoggerFactory.getLogger(StockPriceServiceImpl.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final StockSymbolProperties stockSymbolProperties;
+    private final StocksProperties stocksProperties;
 
     @Autowired
     private RedisManager redisManager;
@@ -42,8 +42,8 @@ public class StockServiceImpl implements StockService {
     @Autowired
     private TStocksPriceRepository tStocksPriceRepository;
 
-    public StockServiceImpl(StockSymbolProperties stockSymbolProperties) {
-        this.stockSymbolProperties = stockSymbolProperties;
+    public StockServiceImpl(StocksProperties stocksProperties) {
+        this.stocksProperties = stocksProperties;
     }
 
     private List<String> getStockListFromRedis(String key) {
@@ -68,8 +68,8 @@ public class StockServiceImpl implements StockService {
             return Collections.singletonMap("STOCK-LIST", stockListFromRedis);
         }
 
-        // Fetch from StockSymbolProperties if not found in Redis
-        List<String> stocks = stockSymbolProperties.getSymbols();
+        // Fetch from StocksProperties if not found in Redis
+        List<String> stocks = stocksProperties.getSymbols();
 
         try {
             // Store in Redis with 24-hour expiry

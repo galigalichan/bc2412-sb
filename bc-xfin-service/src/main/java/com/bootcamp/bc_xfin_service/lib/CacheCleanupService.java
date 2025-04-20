@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.bootcamp.bc_xfin_service.config.RedisManager;
-import com.bootcamp.bc_xfin_service.config.StockSymbolProperties;
+import com.bootcamp.bc_xfin_service.config.StocksProperties;
 import com.bootcamp.bc_xfin_service.service.HolidayService;
 
 @Service
@@ -22,7 +22,7 @@ public class CacheCleanupService {
     private RedisManager redisManager;
 
     @Autowired
-    private StockSymbolProperties stockSymbolProperties;
+    private StocksProperties stocksProperties;
 
     @Autowired
     private HolidayService holidayService;
@@ -39,7 +39,7 @@ public class CacheCleanupService {
 
         redisManager.delete("STOCK-LIST");
 
-        List<String> stocks = stockSymbolProperties.getSymbols();
+        List<String> stocks = stocksProperties.getSymbols();
 
         for (String stock : stocks) {
             redisManager.delete("SYSDATE-" + stock);

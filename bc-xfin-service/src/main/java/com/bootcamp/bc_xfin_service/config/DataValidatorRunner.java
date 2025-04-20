@@ -39,7 +39,7 @@ public class DataValidatorRunner implements CommandLineRunner {
     private final OHLCVServiceImpl ohlcvService;
     private final YahooFinanceManager yahooFinanceManager;
     private final ValidationReportFormatter reportFormatter;
-    private final StockSymbolProperties stockSymbolProperties;
+    private final StocksProperties stocksProperties;
     @Value("${validation.auto-fix-enabled:false}")
     private boolean autoFixEnabled;
     
@@ -49,7 +49,7 @@ public class DataValidatorRunner implements CommandLineRunner {
     }
 
     public void runValidation() {
-        List<String> stocks = stockSymbolProperties.getSymbols();
+        List<String> stocks = stocksProperties.getSymbols();
         if (stocks == null || stocks.isEmpty()) {
             throw new IllegalStateException("Stock symbol list is empty or not configured.");
         }
