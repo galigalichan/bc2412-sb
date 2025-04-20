@@ -47,11 +47,11 @@ public class OHLCVServiceImpl implements OHLCVService {
     public OHLCVServiceImpl(OHLCVRepository ohlcvRepository,
                         YahooFinanceManager yahooFinanceManager,
                         HolidayService holidayService,
-                        StocksProperties stockSymbolProperties) {
+                        StocksProperties stocksProperties) {
         this.ohlcvRepository = ohlcvRepository;
         this.yahooFinanceManager = yahooFinanceManager;
         this.holidayService = holidayService;
-        this.stocksProperties = stockSymbolProperties;
+        this.stocksProperties = stocksProperties;
     }
 
     @Transactional
