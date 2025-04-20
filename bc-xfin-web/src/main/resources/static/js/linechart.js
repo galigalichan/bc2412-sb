@@ -1,223 +1,271 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const chart = LightweightCharts.createChart(
-    document.getElementById("chart-container"),
-    {
-      width: 1000,
-      height: 600,
+  // ============ Chart Setup ============
+  const chartContainer = document.getElementById("chart-container");
+  let chart = null, stockPriceSeries = null, movingAverageSeries = null;
+
+  function createChart() {
+    if (chart) {
+      chart.remove();
+    }
+    chart = LightweightCharts.createChart(chartContainer, {
+      width: chartContainer.clientWidth,
+      height: chartContainer.clientHeight,
       layout: {
-        background: { type: "solid", color: "#000000" }, // Force black background
-        textColor: "#ffffff", // White text for contrast
+        background: { type: "solid", color: "#000" },
+        textColor: "#fff",
       },
       grid: {
-        vertLines: { color: "#1f1f1f" }, // Dark grid
+        vertLines: { color: "#1f1f1f" },
         horzLines: { color: "#1f1f1f" },
       },
-      priceScale: {
-        borderColor: "#7b5353",
-      },
+      priceScale: { borderColor: "#7b5353" },
       timeScale: {
         borderColor: "#7b5353",
-        timeVisible: true, // Enable time visibility
+        timeVisible: true,
         secondsVisible: false,
-        tickMarkFormatter: (time) => {
-          const date = new Date(time * 1000); // Convert Unix timestamp to milliseconds
-          date.setMinutes(date.getMinutes() + date.getTimezoneOffset() + 480); // Convert to GMT+8
-          const hours = date.getHours().toString().padStart(2, "0");
-          const minutes = date.getMinutes().toString().padStart(2, "0");
-          return `${hours}:${minutes}`; // Show time in HH:mm format
-        },
+        tickMarkFormatter: gmt8TimeFormatter,
       },
       crosshair: {
-        mode: LightweightCharts.CrosshairMode.Normal, // Keep crosshair active
-        vertLine: {
-          color: '#aaaaaa',
-          width: 1,
-          style: LightweightCharts.LineStyle.Dashed,
-          visible: true,
-        },
-        horzLine: {
-          color: '#aaaaaa',
-          width: 1,
-          style: LightweightCharts.LineStyle.Dashed,
-          visible: true,
-        },
+        mode: LightweightCharts.CrosshairMode.Normal,
+        vertLine: { color: '#aaaaaa', width: 1, style: LightweightCharts.LineStyle.Dashed, visible: true },
+        horzLine: { color: '#aaaaaa', width: 1, style: LightweightCharts.LineStyle.Dashed, visible: true },
       },
-    }
-  );
+    });
+    stockPriceSeries = chart.addLineSeries({
+      color: "#26a69a", lineWidth: 1.5, priceLineVisible: false, lastValueVisible: true
+    });
+    movingAverageSeries = chart.addLineSeries({
+      color: "#ff9800", lineWidth: 1.5, lineStyle: LightweightCharts.LineStyle.Dotted,
+      priceLineVisible: false, lastValueVisible: true
+    });
+    chart.applyOptions({
+      crosshair: {
+        horzLine: { labelVisible: false },
+        vertLine: { labelVisible: false },
+      }
+    });
 
-  // Add line series for stock prices
-  const stockPriceSeries = chart.addLineSeries({
-    color: "#26a69a", // Green for stock prices
-    lineWidth: 1.5,
-    priceLineVisible: false,  // This removes the horizontal dotted line
-    lastValueVisible: true,   // Keeps the price tag
-  });
+    // Responsive resize
+    window.addEventListener('resize', debounce(function() {
+      chart.applyOptions({
+        width: chartContainer.clientWidth,
+        height: chartContainer.clientHeight,
+      });
+    }, 100));
+  }
+  createChart();
 
-  // Add line series for moving averages
-  const movingAverageSeries = chart.addLineSeries({
-    color: "#ff9800", // Orange for moving average
-    lineWidth: 1.5,
-    lineStyle: LightweightCharts.LineStyle.Dotted, // Optional: Dotted line for differentiation
-    priceLineVisible: false,  // This removes the horizontal dotted line
-    lastValueVisible: true,   // Keeps the price tag
-  });
+  // ============ Symbol Handling ============
+  const symbolSelect = document.getElementById("symbol");
 
-  chart.applyOptions({
-    timeScale: {
-      barSpacing: 20, // Adjust spacing
-      timeVisible: true,
-      secondsVisible: false,
-      tickMarkFormatter: (time) => {
-        const date = new Date(time * 1000); // Convert to Date
-        date.setMinutes(date.getMinutes() + date.getTimezoneOffset() + 480); // Convert to GMT+8
-        const hours = date.getHours().toString().padStart(2, "0");
-        const minutes = date.getMinutes().toString().padStart(2, "0");
-        return `${hours}:${minutes}`;
-      },
-    },
-    localization: {
-      dateFormat: "yyyy-MM-dd",
-      timeFormatter: (time) => {
-        const date = new Date(time * 1000);
-        date.setMinutes(date.getMinutes() + date.getTimezoneOffset() + 480); // Convert to GMT+8
-        return `${date.getFullYear()}-${(date.getMonth() + 1)
-          .toString()
-          .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")} ${
-          date.getHours().toString().padStart(2, "0")
-        }:${date.getMinutes().toString().padStart(2, "0")}`;
-      },
-    },
-    priceFormat: {
-      type: "price",
-      precision: 2,
-      minMove: 0.01,
-    },
-    crosshair: {
-      // Remove default x-axis & y-axis tooltips
-      horzLine: {
-        labelVisible: false, 
-      },
-      vertLine: {
-        labelVisible: false, 
-      },
-    },
-  });
+  function getStockSymbolFromUrl() {
+    const pathSegments = window.location.pathname.split("/");
+    return pathSegments[pathSegments.length - 1]; // last segment
+  }
 
-  // Tooltip handling
-  chart.subscribeCrosshairMove((param) => {
-    const tooltip = document.getElementById("tooltip");
+  function loadSymbols() {
+    fetch("http://ec2-54-176-81-104.us-west-1.compute.amazonaws.com:8101/api/stocklist")
+      .then((res) => res.json())
+      .then((data) => {
+        const symbols = data["STOCK-LIST"];
+        const urlSymbol = getStockSymbolFromUrl();
+        symbolSelect.innerHTML = ""; // Clear existing options
 
-    if (!param || !param.time) {
-      tooltip.style.display = "none";
-      return;
-    }
+        // Populate the dropdown
+        symbols.forEach((symbol) => {
+          const option = document.createElement("option");
+          option.value = symbol;
+          option.textContent = symbol;
+          symbolSelect.appendChild(option);
+        });
 
-    const timestamp = param.time; // This is in seconds (Unix time)
-    const date = new Date(timestamp * 1000); // Convert to Date object
-    date.setMinutes(date.getMinutes() + date.getTimezoneOffset() + 480); // Convert to GMT+8
+        if (!symbols.includes(urlSymbol)) {
+          showError(`Invalid stock symbol: ${urlSymbol}`);
+          return;
+        }
 
-    const formattedTime = `${date.getFullYear()}-${(date.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")} ${
-      date.getHours().toString().padStart(2, "0")
-    }:${date.getMinutes().toString().padStart(2, "0")}`;
+        // Valid symbol — set dropdown, load chart, and update URL
+        symbolSelect.value = urlSymbol;
+        loadChart(urlSymbol);
+        history.replaceState({}, '', `/linechart/${urlSymbol}`);
+      })
+      .catch((error) => {
+        showErrorMessage("❌ Failed to load stock list.");
+        console.error("Error loading symbols:", error);
+      });
+  }
 
-    // Get prices from both series
-    const stockPriceData = param.seriesData.get(stockPriceSeries);
-    const movingAvgData = param.seriesData.get(movingAverageSeries);
-
-    const stockPrice = stockPriceData && stockPriceData.value !== undefined ? stockPriceData.value.toFixed(2) : "N/A";
-    const movingAvg = movingAvgData && movingAvgData.value !== undefined ? movingAvgData.value.toFixed(2) : "N/A";
-
-    // Set tooltip text with both values
-    tooltip.innerHTML = `${formattedTime}<br>
-                         Price: <span style="color:#26a69a">${stockPrice}</span><br>
-                         SMA(5): <span style="color:#ff9800">${movingAvg}</span>`;
-    tooltip.style.display = "block";
-
-    if (param.point) {
-      tooltip.style.left = `${param.point.x + 10}px`;
-      tooltip.style.top = `${param.point.y - 30}px`;
-    }
-  });
-
-  // Fetch stock data
+  // ============ Data Fetch & Render ============
   async function fetchStockData(symbol) {
     try {
-      const params = new URLSearchParams({ symbol: symbol, interval: "5m" });
+      const params = new URLSearchParams({ symbol, interval: "5m" });
       const response = await fetch(`/v1/chart/line?${params.toString()}`);
+
+      // If response is 4xx or 5xx, throw an error
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
       const data = await response.json();
-    
-      console.log("Raw Data from API:", data);
 
       if (!data || data.length === 0) {
-        console.warn(`No stock data available for ${symbol}.`);
+        showError(`No data available for "${symbol}".`);
         return;
       }
+
+      dismissError(); // clear previous errors if all good
 
       // Transform stock prices
       const stockPrices = data
         .filter(entry => entry.close != null)
         .map(entry => ({
-            time: Math.floor(entry.dateTime), // Keep in seconds if chart expects seconds
-            value: entry.close}))
+          time: Math.floor(entry.dateTime), // Keep in seconds if chart expects seconds
+          value: entry.close,
+        }))
         .sort((a, b) => a.time - b.time);
 
       // Transform moving averages (if available)
       const movingAverages = data
-          .filter(entry => entry.movingAverage != null)
-          .map(entry => ({
-              time: Math.floor(entry.dateTime), 
-              value: entry.movingAverage}))
-          .sort((a, b) => a.time - b.time);
+        .filter(entry => entry.movingAverage != null)
+        .map(entry => ({
+          time: Math.floor(entry.dateTime),
+          value: entry.movingAverage,
+        }))
+        .sort((a, b) => a.time - b.time);
 
-      // Validate stock prices before updating chart
-      const isValidStockData = stockPrices.length > 0 &&
-        stockPrices.every(entry => typeof entry.time === 'number' && typeof entry.value === 'number');
-
-      // Validate moving averages (but allow empty)
-      const isValidMovingAvg = movingAverages.length === 0 || 
-        movingAverages.every(entry => typeof entry.time === 'number' && typeof entry.value === 'number');
-
-      if (!isValidStockData) {
-        console.error("Invalid stock price data!", stockPrices);
+      if (stockPrices.length === 0) {
+        showError(`Stock data for "${symbol}" is invalid.`);
         return;
       }
-
-      console.log("Transformed Stock Prices:", stockPrices);
-      console.log("Transformed Moving Averages:", movingAverages);
 
       // Set data separately for each series
       stockPriceSeries.setData(stockPrices);
 
       // Only update moving average series if valid data is available
-      if (isValidMovingAvg && movingAverages.length > 0) {
+      if (movingAverages.length > 0) {
         movingAverageSeries.setData(movingAverages);
       } else {
-        console.warn("Not enough data for moving averages, skipping MA plot.");
+        movingAverageSeries.setData([]); // Clear if no MA
       }
 
       chart.timeScale().fitContent();
     } catch (error) {
+      showError("Error fetching stock data.");
       console.error("Error fetching stock data:", error);
     }
   }
 
-  // Extract stock symbol from URL
-  function getStockSymbolFromUrl() {
-    const pathSegments = window.location.pathname.split("/");
-    return pathSegments[pathSegments.length - 1]; // Get last segment
+  // ============ Chart Loader ============
+  function loadChart(symbol) {
+    fetchStockData(symbol);
   }
 
-  // Fetch stock symbol dynamically
-  const stockSymbol = getStockSymbolFromUrl();
+  // ============ Tooltip Handling ============
+  chart.subscribeCrosshairMove((param) => {
+    const tooltip = document.getElementById("tooltip");
+    if (!param || !param.time) {
+      tooltip.style.display = "none";
+      return;
+    }
+    const time = param.time;
+    const formattedTime = gmt8DateTimeFormatter(time);
 
-  // Debugging: Check if symbol is correctly extracted
-  console.log("Extracted stock symbol:", stockSymbol);
+    const stockData = param.seriesData.get(stockPriceSeries);
+    const maData = param.seriesData.get(movingAverageSeries);
 
-  // Fetch data dynamically based on the stock symbol
-  fetchStockData(stockSymbol);
+    const stockPrice = stockData?.value?.toFixed(2) ?? "N/A";
+    const movingAvg = maData?.value?.toFixed(2) ?? "N/A";
 
-  // Refresh stock data every 10 seconds
-  setInterval(() => fetchStockData(stockSymbol), 10000);
+    tooltip.innerHTML = `${formattedTime}<br>
+      <b>Price:</b> <span style="color:#26a69a">${stockPrice}</span><br>
+      <b>SMA(5):</b> <span style="color:#ff9800">${movingAvg}</span>`;
+    tooltip.style.display = "block";
+
+    if (param.point) {
+      // Offset: 16px right, 10px up for mobile/desktop usability
+      let left = param.point.x + 16;
+      let top = param.point.y - 10;
+      // Prevent tooltip overflow
+      const containerRect = chartContainer.getBoundingClientRect();
+      const tooltipRect = tooltip.getBoundingClientRect();
+      // Right edge
+      if (left + tooltipRect.width > containerRect.width) {
+        left = containerRect.width - tooltipRect.width - 6;
+      }
+      // Top edge
+      if (top < 0) top = 2;
+      // Bottom edge
+      if (top + tooltipRect.height > containerRect.height) {
+        top = containerRect.height - tooltipRect.height - 6;
+      }
+      tooltip.style.left = left + "px";
+      tooltip.style.top = top + "px";
+    }
+  });
+
+  // ============ Form Submission ============
+  document.getElementById("chart-options").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const stockSymbol = symbolSelect.value;
+    loadChart(stockSymbol);
+    history.pushState({}, '', `/linechart/${stockSymbol}`);
+  });
+
+  // ============ URL/Navigation Handling ============
+  window.addEventListener("popstate", () => {
+    const symbol = getStockSymbolFromUrl();
+    symbolSelect.value = symbol; // Update dropdown
+    loadChart(symbol); // Load new chart
+  });
+
+  // Auto-refresh every 10 seconds
+  setInterval(() => {
+    const currentSymbol = getStockSymbolFromUrl();
+    fetchStockData(currentSymbol);
+  }, 10000);
+
+  // ============ Error Modal ============
+  function showError(message) {
+    const modal = document.getElementById("error-modal");
+    const text = document.getElementById("error-text");
+    text.textContent = message;
+    modal.style.display = "block";
+  }
+  function dismissError() {
+    const modal = document.getElementById("error-modal");
+    modal.style.display = "none";
+  }
+  window.dismissError = dismissError;
+  document.getElementById("error-modal").addEventListener("click", (e) => {
+    if (e.target.classList.contains("modal")) dismissError();
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") dismissError();
+  });
+  function showErrorMessage(message) {
+    showError(message);
+  }
+
+  // ============ Helper Functions ============
+  function gmt8TimeFormatter(unixTime) {
+    const date = new Date(unixTime * 1000);
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset() + 480);
+    return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+  }
+  function gmt8DateTimeFormatter(unixTime) {
+    const date = new Date(unixTime * 1000);
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset() + 480);
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date
+      .getDate().toString().padStart(2, "0")} ${date.getHours().toString().padStart(2, "0")}:${date
+      .getMinutes().toString().padStart(2, "0")}`;
+  }
+  // Debounce function for resize
+  function debounce(fn, ms) {
+    let t;
+    return function(...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), ms);
+    };
+  }
+
+  // ============ Initial Load ============
+  loadSymbols();
 });

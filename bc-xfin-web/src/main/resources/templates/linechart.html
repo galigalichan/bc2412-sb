@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,13 +7,31 @@
   <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
   <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
-
 <body>
   <h1>Stock Line Chart</h1>
-  <p>Stock Symbol: <span th:text="${stockSymbol}"></span></p> <!-- Display stock symbol -->
-  <div id="tooltip"></div>
-  <div id="chart-container"></div>
+  <form id="chart-options">
+    <div>
+      <label for="symbol">Symbol:</label>
+      <select id="symbol"></select>
+    </div>
+    <button type="submit">Load</button>
+  </form>
+
+  <div id="error-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">Error</div>
+      <div class="modal-body">
+        <p id="error-text"></p>
+      </div>
+      <div class="modal-footer">
+        <button onclick="dismissError()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="chart-container">
+    <div id="tooltip"></div>
+  </div>
   <script th:src="@{/js/linechart.js}"></script>
 </body>
-
 </html>

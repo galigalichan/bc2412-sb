@@ -1,17 +1,20 @@
 package com.bootcamp.bc_xfin_web.controller.impl;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bootcamp.bc_xfin_web.controller.CandleChartOperation;
 import com.bootcamp.bc_xfin_web.dto.CandleStickDTO;
 import com.bootcamp.bc_xfin_web.dto.mapper.ChartMapper;
 import com.bootcamp.bc_xfin_web.model.CandleStick;
+import com.bootcamp.bc_xfin_web.service.OhlcvDataService;
 
 @RestController
 @RequestMapping(value = "/v1")
@@ -19,28 +22,31 @@ public class CandleChartController implements CandleChartOperation {
   @Autowired
   private ChartMapper chartMapper;
 
+  @Autowired
+  private OhlcvDataService ohlcvDataService;
+
   @Override
-  public List<CandleStickDTO> getCandleChart(String interval) {
+  @GetMapping(value = "/chart/candle")
+  public List<CandleStickDTO> getCandleChart(@RequestParam String symbol, @RequestParam String interval) {
     List<CandleStick> candleSticks = switch (CandleStick.TYPE.of(interval)) {
-      case DAY -> getCandlesByDay();
+      case DAY -> getCandlesByDay(symbol).getOrDefault("candleSticks", List.of());
+      case WEEK -> getCandlesByWeek(symbol).getOrDefault("candleSticks", List.of());
+      case MONTH -> getCandlesByMonth(symbol).getOrDefault("candleSticks", List.of());
     };
     return candleSticks.stream() //
         .map(e -> this.chartMapper.map(e)) //
         .collect(Collectors.toList());
   }
 
-  private List<CandleStick> getCandlesByDay() {
-    return Arrays.asList( //
-        new CandleStick(2024, 1, 1, 100.0, 105.0, 98.0, 102.0, 0L), // 2024-01-01
-        new CandleStick(2024, 1, 2, 102.0, 106.0, 101.0, 105.0, 0L), // 2024-01-02
-        new CandleStick(2024, 1, 3, 103.0, 107.0, 102.0, 104.0, 0L), // 2024-01-03
-        new CandleStick(2024, 1, 4, 104.0, 108.0, 103.0, 107.0, 0L), // 2024-01-04
-        new CandleStick(2024, 1, 5, 107.0, 109.0, 105.0, 106.0, 0L), // 2024-01-05
-        new CandleStick(2024, 1, 6, 108.0, 110.0, 107.0, 109.0, 0L), // 2024-01-06
-        new CandleStick(2024, 1, 7, 109.0, 112.0, 108.0, 111.0, 0L), // 2024-01-07
-        new CandleStick(2024, 1, 8, 111.0, 119.0, 108.0, 108.0, 0L), // 2024-01-08
-        new CandleStick(2024, 1, 9, 108.0, 110.0, 105.0, 105.0, 0L), // 2024-01-09
-        new CandleStick(2024, 1, 10, 105.0, 111.0, 104.0, 111.0, 0L) // 2024-01-10
-    );
+  private Map<String, List<CandleStick>> getCandlesByDay(String symbol) {
+    return ohlcvDataService.getCandlesByDay(symbol);
+  }
+
+  private Map<String, List<CandleStick>> getCandlesByWeek(String symbol) {
+    return ohlcvDataService.getCandlesByWeek(symbol);
+  }
+
+  private Map<String, List<CandleStick>> getCandlesByMonth(String symbol) {
+    return ohlcvDataService.getCandlesByMonth(symbol);
   }
 }

@@ -1,4 +1,4 @@
-package com.bootcamp.bc_xfin_web.lib;
+package com.bootcamp.bc_xfin_web.config;
 
 import java.time.Duration;
 

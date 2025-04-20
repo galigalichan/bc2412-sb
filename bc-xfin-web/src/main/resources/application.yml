@@ -17,3 +17,17 @@ spring:
       hibernate:
         jdbc:
           time_zone: "Asia/Hong_Kong"
+
+stocks:
+  symbols:
+    - 0388.HK #香港交易所
+    - 0700.HK #騰訊控股
+    - 0005.HK #匯豐控股
+    - 0939.HK #建設銀行
+    - 1299.HK #友邦保險
+    - 1398.HK #工商銀行
+    - 0941.HK #中國移動
+    - 1211.HK #比亞迪股份
+    - 0883.HK #中國海洋石油
+    - 0016.HK #新鴻基地產
+  default-symbol: 0388.HK

@@ -7,11 +7,48 @@
   <title>TradingView Candlestick Chart</title>
   <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
   <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <link rel="icon" href="data:,">
 </head>
 
 <body>
   <h1>Stock Candlestick Chart</h1>
-  <div id="chart-container"></div>
+
+  <form id="chart-options" autocomplete="off">
+    <div style="margin-bottom: 10px;">
+      <label for="symbol-select">Symbol:</label>
+      <select id="symbol-select"></select>
+
+      <label for="interval-select">Interval:</label>
+      <select id="interval-select">
+        <option value="1d">Daily</option>
+        <option value="1w">Weekly</option>
+        <option value="1m">Monthly</option>
+      </select>
+    </div>
+
+    <button type="button">Load</button> <!-- Changed to type="button" -->
+  </form>
+
+  <div id="error-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header"></div>
+      <div class="modal-body">
+        <p id="error-text"></p>
+      </div>
+      <div class="modal-footer">
+        <button id="errorModalCloseBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sma-toggle-container" style="margin-bottom: 12px; color: white; display: flex; flex-wrap: wrap; gap: 12px;">
+    <!-- Switches injected dynamically -->
+  </div>
+  <div id="chart-container" style="position: relative;">
+    <div id="tooltip" style="display:none;position:absolute;z-index:10;"></div>
+  </div>
+  <div id="chart-meta" th:data-symbol="${stockSymbol}" th:data-interval="${interval}" style="display:none;"></div>
+
   <script th:src="@{/js/candlechart.js}"></script>
 </body>
 
